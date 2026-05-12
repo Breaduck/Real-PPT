@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { anthropic, OPUS_MODEL } from "@/lib/anthropic";
+import { callAi, stripJsonFences, type Provider } from "@/lib/ai-providers";
 import {
   GENERATE_DECK_SYSTEM,
   buildGenerateDeckUserMessage,
@@ -8,13 +8,21 @@ import type { PptDesignSystem, Slide } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
   try {
-    const { pptDesign, content } = (await req.json()) as {
+    const { pptDesign, content, apiKey, provider = "anthropic" } = (await req.json()) as {
       pptDesign: PptDesignSystem;
       content: string;
+      apiKey: string;
+      provider?: Provider;
     };
 
     if (!pptDesign || !content) {
       return new Response(JSON.stringify({ error: "pptDesign and content required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: "API 키를 입력해 주세요." }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -25,62 +33,29 @@ export async function POST(req: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          const response = await anthropic.messages.create({
-            model: OPUS_MODEL,
-            max_tokens: 16000,
-            system: [
-              {
-                type: "text",
-                text: GENERATE_DECK_SYSTEM,
-                cache_control: { type: "ephemeral" },
-              },
-            ],
-            messages: [
-              {
-                role: "user",
-                content: [
-                  {
-                    type: "text",
-                    text: buildGenerateDeckUserMessage(pptDesign, content),
-                    cache_control: { type: "ephemeral" },
-                  },
-                ],
-              },
-            ],
+          const raw = await callAi({
+            provider,
+            apiKey,
+            systemPrompt: GENERATE_DECK_SYSTEM,
+            userMessage: buildGenerateDeckUserMessage(pptDesign, content),
+            maxTokens: 16000,
           });
-
-          const raw = response.content[0];
-          if (raw.type !== "text") {
-            controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ error: "Unexpected response" })}\n\n`)
-            );
-            controller.close();
-            return;
-          }
 
           let slides: Slide[];
           try {
-            const cleaned = raw.text
-              .replace(/^```json?\s*/m, "")
-              .replace(/```\s*$/m, "")
-              .trim();
-            slides = JSON.parse(cleaned);
+            slides = JSON.parse(stripJsonFences(raw));
           } catch {
             controller.enqueue(
               encoder.encode(
-                `data: ${JSON.stringify({ error: "JSON parse failed", raw: raw.text.slice(0, 500) })}\n\n`
+                `data: ${JSON.stringify({ error: "JSON 파싱 실패", raw: raw.slice(0, 500) })}\n\n`
               )
             );
             controller.close();
             return;
           }
 
-          // Stream slides one at a time so the UI can show progress
           for (const slide of slides) {
-            controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ slide })}\n\n`)
-            );
-            // Small delay so the browser can paint between slides
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ slide })}\n\n`));
             await new Promise((r) => setTimeout(r, 30));
           }
 

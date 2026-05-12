@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import clsx from "clsx";
 import type { PptDesignSystem, Slide, WizardStep } from "@/lib/types";
+import type { Provider } from "@/lib/ai-providers";
 import Deck from "@/components/deck/Deck";
 
 const PLACEHOLDER_DESIGN_MD = `# paste design.md here
@@ -35,24 +36,40 @@ export default function Home() {
   const [content, setContent] = useState("");
   const [slides, setSlides] = useState<Slide[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [loadingMsg, setLoadingMsg] = useState("");
   const [slideProgress, setSlideProgress] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
 
+  // API 설정 — sessionStorage에 저장
+  const [provider, setProvider] = useState<Provider>("anthropic");
+  const [apiKey, setApiKey] = useState("");
+  const [showSettings, setShowSettings] = useState(false);
+
+  useEffect(() => {
+    const savedProvider = sessionStorage.getItem("ppt_provider") as Provider | null;
+    const savedKey = sessionStorage.getItem("ppt_api_key");
+    if (savedProvider) setProvider(savedProvider);
+    if (savedKey) setApiKey(savedKey);
+  }, []);
+
+  function saveSettings(p: Provider, k: string) {
+    setProvider(p);
+    setApiKey(k);
+    sessionStorage.setItem("ppt_provider", p);
+    sessionStorage.setItem("ppt_api_key", k);
+    setShowSettings(false);
+  }
+
   async function handleTransformDesign() {
-    if (!designMd.trim()) {
-      setError("design.md 내용을 붙여넣어 주세요.");
-      return;
-    }
+    if (!designMd.trim()) { setError("design.md 내용을 붙여넣어 주세요."); return; }
+    if (!apiKey.trim()) { setError("먼저 API 키를 입력해 주세요."); setShowSettings(true); return; }
     setError(null);
     setStep("transform-loading");
-    setLoadingMsg("디자인 시스템을 분석 중...");
 
     try {
       const res = await fetch("/api/transform-design", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ designMd }),
+        body: JSON.stringify({ designMd, apiKey, provider }),
       });
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error ?? "변환 실패");
@@ -65,10 +82,7 @@ export default function Home() {
   }
 
   async function handleGenerateDeck() {
-    if (!content.trim()) {
-      setError("슬라이드 내용을 입력해 주세요.");
-      return;
-    }
+    if (!content.trim()) { setError("슬라이드 내용을 입력해 주세요."); return; }
     if (!pptDesign) return;
     setError(null);
     setSlides([]);
@@ -81,14 +95,11 @@ export default function Home() {
       const res = await fetch("/api/generate-deck", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pptDesign, content }),
+        body: JSON.stringify({ pptDesign, content, apiKey, provider }),
         signal: abortRef.current.signal,
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error ?? "생성 실패");
-      }
+      if (!res.ok) { const err = await res.json(); throw new Error(err.error ?? "생성 실패"); }
 
       const reader = res.body!.getReader();
       const decoder = new TextDecoder();
@@ -98,24 +109,14 @@ export default function Home() {
         const { done, value } = await reader.read();
         if (done) break;
         const text = decoder.decode(value, { stream: true });
-        const lines = text.split("\n");
-        for (const line of lines) {
+        for (const line of text.split("\n")) {
           if (!line.startsWith("data: ")) continue;
-          const payload = line.slice(6);
           try {
-            const parsed = JSON.parse(payload);
+            const parsed = JSON.parse(line.slice(6));
             if (parsed.error) throw new Error(parsed.error);
-            if (parsed.slide) {
-              collected.push(parsed.slide);
-              setSlideProgress(collected.length);
-            }
-            if (parsed.done) {
-              setSlides(collected);
-              setStep("deck-view");
-            }
-          } catch {
-            // partial line, skip
-          }
+            if (parsed.slide) { collected.push(parsed.slide); setSlideProgress(collected.length); }
+            if (parsed.done) { setSlides(collected); setStep("deck-view"); }
+          } catch { /* partial line */ }
         }
       }
     } catch (e) {
@@ -134,44 +135,63 @@ export default function Home() {
     setError(null);
   }
 
-  // Deck view — full screen, no chrome
   if (step === "deck-view" && slides.length > 0 && pptDesign) {
     return <Deck slides={slides} design={pptDesign} onReset={handleReset} />;
   }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white flex flex-col items-center justify-center px-4 py-16">
-      {/* Logo / Header */}
+      {/* Header */}
       <div className="mb-12 text-center">
         <h1 className="text-3xl font-bold tracking-tight">
           <span className="text-white">PPT</span>
           <span className="text-zinc-400"> Maker</span>
         </h1>
-        <p className="mt-2 text-zinc-500 text-sm">
-          브랜드 design.md → 전문 프레젠테이션
-        </p>
+        <p className="mt-2 text-zinc-500 text-sm">브랜드 design.md → 전문 프레젠테이션</p>
       </div>
 
-      {/* Step indicator */}
       <StepIndicator step={step} />
 
-      {/* Panels */}
+      {/* Settings modal */}
+      {showSettings && (
+        <SettingsModal
+          provider={provider}
+          apiKey={apiKey}
+          onSave={saveSettings}
+          onClose={() => setShowSettings(false)}
+        />
+      )}
+
       <div className="w-full max-w-2xl mt-10">
-        {/* Step 1: paste design.md */}
+        {/* API 키 상태 표시 */}
+        {!showSettings && (
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className={clsx("w-2 h-2 rounded-full", apiKey ? "bg-green-500" : "bg-zinc-600")} />
+              <span className="text-zinc-500 text-xs">
+                {apiKey
+                  ? `${provider === "anthropic" ? "Claude (Anthropic)" : "Gemini (Google)"} · ${apiKey.slice(0, 8)}...`
+                  : "API 키 미설정"}
+              </span>
+            </div>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="text-zinc-500 hover:text-white text-xs underline transition-colors"
+            >
+              {apiKey ? "변경" : "API 키 입력"}
+            </button>
+          </div>
+        )}
+
+        {/* Step 1 */}
         {(step === "paste-design" || step === "transform-loading") && (
           <Panel title="① design.md 붙여넣기">
             <p className="text-zinc-400 text-sm mb-4">
-              <a
-                href="https://getdesign.md"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline hover:text-white"
-              >
+              <a href="https://getdesign.md" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
                 getdesign.md
               </a>{" "}
-              에서 원하는 브랜드의 DESIGN.md 파일 전체를 복사해 붙여넣으세요.
-              <br />
-              (MiniMax, Stripe, Anthropic, Linear, Tesla 등 71+ 브랜드)
+              에서 원하는 브랜드의 DESIGN.md를 복사해 붙여넣으세요.
+              <span className="text-zinc-600"> (MiniMax, Stripe, Anthropic, Linear, Tesla 등 71+)</span>
             </p>
             <textarea
               className="w-full h-64 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-zinc-200 resize-none font-mono focus:outline-none focus:border-zinc-500 transition-colors"
@@ -187,104 +207,62 @@ export default function Home() {
               className="mt-4 w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {step === "transform-loading" ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Spinner /> {loadingMsg}
-                </span>
-              ) : (
-                "디자인 분석하기 →"
-              )}
+                <span className="flex items-center justify-center gap-2"><Spinner /> 디자인 분석 중...</span>
+              ) : "디자인 분석하기 →"}
             </button>
           </Panel>
         )}
 
-        {/* Step 2: design preview */}
+        {/* Step 2: preview */}
         {step === "design-preview" && pptDesign && (
           <Panel title="② 디자인 시스템 확인">
-            <div className="mb-6">
-              <p className="text-zinc-400 text-sm mb-4">
-                <strong className="text-white">{pptDesign.brandName}</strong> 브랜드의 PPT
-                디자인 시스템이 준비되었습니다.
-              </p>
-
-              {/* Color swatches */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                {[
-                  { label: "Brand", color: pptDesign.colors.brandPrimary },
-                  { label: "Accent", color: pptDesign.colors.accent },
-                  { label: "BG", color: pptDesign.colors.background },
-                  { label: "Surface", color: pptDesign.colors.surface },
-                  ...pptDesign.colors.dataPalette.map((c, i) => ({
-                    label: `Data ${i + 1}`,
-                    color: c,
-                  })),
-                ].map(({ label, color }) => (
-                  <div key={label} className="flex items-center gap-1.5">
-                    <div
-                      className="w-5 h-5 rounded-sm ring-1 ring-white/10"
-                      style={{ backgroundColor: color }}
-                    />
-                    <span className="text-zinc-500 text-xs">{label}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Font families */}
-              <div className="text-zinc-400 text-sm space-y-1">
-                <p>
-                  <span className="text-zinc-600">헤딩:</span>{" "}
-                  <span className="font-mono text-xs">{pptDesign.fontFamilies.heading}</span>
-                </p>
-                <p>
-                  <span className="text-zinc-600">본문:</span>{" "}
-                  <span className="font-mono text-xs">{pptDesign.fontFamilies.body}</span>
-                </p>
-              </div>
-
-              {/* Design principles */}
-              {pptDesign.designPrinciples.length > 0 && (
-                <div className="mt-4 p-3 bg-zinc-900 rounded-lg">
-                  <p className="text-zinc-500 text-xs uppercase tracking-wider mb-2">
-                    디자인 원칙
-                  </p>
-                  <ul className="space-y-1">
-                    {pptDesign.designPrinciples.map((p, i) => (
-                      <li key={i} className="text-zinc-300 text-sm">
-                        · {p}
-                      </li>
-                    ))}
-                  </ul>
+            <p className="text-zinc-400 text-sm mb-4">
+              <strong className="text-white">{pptDesign.brandName}</strong> PPT 디자인 시스템 준비 완료.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {[
+                { label: "Brand", color: pptDesign.colors.brandPrimary },
+                { label: "Accent", color: pptDesign.colors.accent },
+                { label: "BG", color: pptDesign.colors.background },
+                { label: "Surface", color: pptDesign.colors.surface },
+                ...pptDesign.colors.dataPalette.map((c, i) => ({ label: `Data ${i + 1}`, color: c })),
+              ].map(({ label, color }) => (
+                <div key={label} className="flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-sm ring-1 ring-white/10" style={{ backgroundColor: color }} />
+                  <span className="text-zinc-500 text-xs">{label}</span>
                 </div>
-              )}
+              ))}
             </div>
-
-            <button
-              onClick={() => setStep("paste-content")}
-              className="w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-zinc-200 transition-all"
-            >
+            <div className="text-zinc-400 text-sm space-y-1 mb-4">
+              <p><span className="text-zinc-600">헤딩:</span> <span className="font-mono text-xs">{pptDesign.fontFamilies.heading}</span></p>
+              <p><span className="text-zinc-600">본문:</span> <span className="font-mono text-xs">{pptDesign.fontFamilies.body}</span></p>
+            </div>
+            {pptDesign.designPrinciples.length > 0 && (
+              <div className="p-3 bg-zinc-900 rounded-lg mb-6">
+                <p className="text-zinc-500 text-xs uppercase tracking-wider mb-2">디자인 원칙</p>
+                <ul className="space-y-1">
+                  {pptDesign.designPrinciples.map((p, i) => (
+                    <li key={i} className="text-zinc-300 text-sm">· {p}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            <button onClick={() => setStep("paste-content")} className="w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-zinc-200 transition-all">
               콘텐츠 입력하기 →
             </button>
-            <button
-              onClick={() => setStep("paste-design")}
-              className="mt-2 w-full text-zinc-500 hover:text-white py-2 text-sm transition-colors"
-            >
+            <button onClick={() => setStep("paste-design")} className="mt-2 w-full text-zinc-500 hover:text-white py-2 text-sm transition-colors">
               ← 다른 design.md 사용
             </button>
           </Panel>
         )}
 
-        {/* Step 3: paste content */}
+        {/* Step 3 */}
         {step === "paste-content" && (
           <Panel title="③ 슬라이드 내용 입력">
             <p className="text-zinc-400 text-sm mb-4">
-              슬라이드별로 내용을 작성하세요. 형식:{" "}
-              <code className="text-zinc-300 bg-zinc-800 px-1 rounded text-xs">
-                1장: 제목 / 내용
-              </code>{" "}
-              or{" "}
-              <code className="text-zinc-300 bg-zinc-800 px-1 rounded text-xs">
-                # 1. 제목
-              </code>{" "}
-              식이면 됩니다. 맥락을 잘 써줄수록 더 좋은 슬라이드가 나옵니다.
+              슬라이드별 내용을 자유롭게 작성하세요.{" "}
+              <code className="text-zinc-300 bg-zinc-800 px-1 rounded text-xs">1장: 제목 / 내용</code>{" "}
+              형식을 권장합니다. 많이 쓸수록 좋은 슬라이드가 나옵니다.
             </p>
             <textarea
               className="w-full h-80 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-zinc-200 resize-none font-mono focus:outline-none focus:border-zinc-500 transition-colors"
@@ -293,16 +271,10 @@ export default function Home() {
               onChange={(e) => setContent(e.target.value)}
             />
             {error && <p className="mt-2 text-red-400 text-sm">{error}</p>}
-            <button
-              onClick={handleGenerateDeck}
-              className="mt-4 w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-zinc-200 transition-all"
-            >
+            <button onClick={handleGenerateDeck} className="mt-4 w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-zinc-200 transition-all">
               슬라이드 생성하기 →
             </button>
-            <button
-              onClick={() => setStep("design-preview")}
-              className="mt-2 w-full text-zinc-500 hover:text-white py-2 text-sm transition-colors"
-            >
+            <button onClick={() => setStep("design-preview")} className="mt-2 w-full text-zinc-500 hover:text-white py-2 text-sm transition-colors">
               ← 디자인 미리보기로
             </button>
           </Panel>
@@ -312,17 +284,11 @@ export default function Home() {
         {step === "generate-loading" && (
           <Panel title="④ 슬라이드 생성 중...">
             <div className="flex flex-col items-center py-12 gap-6">
-              <div className="relative">
-                <Spinner size={48} />
-              </div>
+              <Spinner size={48} />
               <div className="text-center">
-                <p className="text-white font-medium">
-                  AI가 콘텐츠 맥락을 분석하고 있습니다
-                </p>
+                <p className="text-white font-medium">AI가 콘텐츠 맥락을 분석 중입니다</p>
                 <p className="text-zinc-500 text-sm mt-1">
-                  {slideProgress > 0
-                    ? `${slideProgress}개 슬라이드 준비 완료...`
-                    : "전체 내용을 먼저 파악하고 최적 레이아웃을 결정합니다"}
+                  {slideProgress > 0 ? `${slideProgress}개 슬라이드 준비 완료...` : "전체 내용을 파악하고 최적 레이아웃을 결정합니다"}
                 </p>
               </div>
               {slideProgress > 0 && (
@@ -341,13 +307,117 @@ export default function Home() {
   );
 }
 
-function Panel({
-  title,
-  children,
+// ---- Settings Modal ----
+
+function SettingsModal({
+  provider: initProvider,
+  apiKey: initKey,
+  onSave,
+  onClose,
 }: {
-  title: string;
-  children: React.ReactNode;
+  provider: Provider;
+  apiKey: string;
+  onSave: (p: Provider, k: string) => void;
+  onClose: () => void;
 }) {
+  const [p, setP] = useState<Provider>(initProvider);
+  const [k, setK] = useState(initKey);
+
+  const placeholder = p === "anthropic"
+    ? "sk-ant-api03-..."
+    : "AIza...";
+
+  const helpUrl = p === "anthropic"
+    ? "https://console.anthropic.com/settings/keys"
+    : "https://aistudio.google.com/app/apikey";
+
+  return (
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 w-full max-w-md">
+        <h2 className="text-lg font-semibold mb-6">API 설정</h2>
+
+        {/* Provider 선택 */}
+        <div className="mb-5">
+          <p className="text-zinc-400 text-sm mb-3">AI 모델 선택</p>
+          <div className="grid grid-cols-2 gap-3">
+            {([
+              { id: "anthropic", label: "Claude (Anthropic)", badge: "추천", sub: "Opus 4.7 · 가장 정확" },
+              { id: "gemini", label: "Gemini (Google)", badge: "저렴", sub: "2.5 Pro · 빠르고 경제적" },
+            ] as const).map(({ id, label, badge, sub }) => (
+              <button
+                key={id}
+                onClick={() => setP(id)}
+                className={clsx(
+                  "p-4 rounded-xl border text-left transition-all",
+                  p === id
+                    ? "border-white bg-white/5"
+                    : "border-zinc-700 hover:border-zinc-500"
+                )}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-medium">{label.split(" ")[0]}</span>
+                  <span className={clsx(
+                    "text-xs px-1.5 py-0.5 rounded",
+                    id === "anthropic" ? "bg-blue-500/20 text-blue-400" : "bg-green-500/20 text-green-400"
+                  )}>
+                    {badge}
+                  </span>
+                </div>
+                <p className="text-zinc-500 text-xs">{sub}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Key input */}
+        <div className="mb-2">
+          <label className="text-zinc-400 text-sm mb-2 block">API 키</label>
+          <input
+            type="password"
+            value={k}
+            onChange={(e) => setK(e.target.value)}
+            placeholder={placeholder}
+            className="w-full bg-zinc-800 border border-zinc-600 rounded-lg px-4 py-3 text-sm text-zinc-200 font-mono focus:outline-none focus:border-zinc-400 transition-colors"
+          />
+        </div>
+        <a
+          href={helpUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-zinc-500 text-xs underline hover:text-zinc-300"
+        >
+          → API 키 발급하러 가기
+        </a>
+
+        <div className="mt-4 p-3 bg-zinc-800 rounded-lg">
+          <p className="text-zinc-500 text-xs">
+            키는 이 브라우저 세션에만 저장됩니다. 서버에 저장되지 않습니다.
+            슬라이드 30장 생성 비용: Claude ~$0.10–0.30 / Gemini ~$0.03–0.10
+          </p>
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 rounded-lg border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 transition-all text-sm"
+          >
+            취소
+          </button>
+          <button
+            onClick={() => onSave(p, k)}
+            className="flex-1 py-3 rounded-lg bg-white text-black font-semibold hover:bg-zinc-200 transition-all text-sm"
+          >
+            저장
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---- Shared ----
+
+function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8">
       <h2 className="text-lg font-semibold mb-6 text-zinc-100">{title}</h2>
@@ -364,38 +434,22 @@ function StepIndicator({ step }: { step: WizardStep }) {
     { id: "generate-loading", label: "생성" },
     { id: "deck-view", label: "완료" },
   ];
-
   const activeIdx = steps.findIndex((s) => s.id === step);
-
   return (
     <div className="flex items-center gap-0">
       {steps.map((s, i) => (
         <div key={s.id} className="flex items-center">
-          <div
-            className={clsx(
-              "w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all",
-              i <= activeIdx
-                ? "bg-white text-black"
-                : "bg-zinc-800 text-zinc-500"
-            )}
-          >
+          <div className={clsx(
+            "w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all",
+            i <= activeIdx ? "bg-white text-black" : "bg-zinc-800 text-zinc-500"
+          )}>
             {i < activeIdx ? "✓" : i + 1}
           </div>
-          <span
-            className={clsx(
-              "ml-1.5 text-xs hidden sm:inline",
-              i <= activeIdx ? "text-zinc-300" : "text-zinc-600"
-            )}
-          >
+          <span className={clsx("ml-1.5 text-xs hidden sm:inline", i <= activeIdx ? "text-zinc-300" : "text-zinc-600")}>
             {s.label}
           </span>
           {i < steps.length - 1 && (
-            <div
-              className={clsx(
-                "w-8 h-px mx-2",
-                i < activeIdx ? "bg-white/40" : "bg-zinc-800"
-              )}
-            />
+            <div className={clsx("w-8 h-px mx-2", i < activeIdx ? "bg-white/40" : "bg-zinc-800")} />
           )}
         </div>
       ))}
@@ -405,27 +459,9 @@ function StepIndicator({ step }: { step: WizardStep }) {
 
 function Spinner({ size = 20 }: { size?: number }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      className="animate-spin"
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeOpacity="0.25"
-      />
-      <path
-        d="M12 2a10 10 0 0 1 10 10"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className="animate-spin">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeOpacity="0.25" />
+      <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </svg>
   );
 }

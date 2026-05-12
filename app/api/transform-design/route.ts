@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { anthropic, OPUS_MODEL } from "@/lib/anthropic";
+import { callAi, stripJsonFences, type Provider } from "@/lib/ai-providers";
 import {
   TRANSFORM_DESIGN_SYSTEM,
   buildTransformUserMessage,
@@ -9,54 +9,35 @@ import type { PptDesignSystem } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
   try {
-    const { designMd } = await req.json();
-    if (!designMd || typeof designMd !== "string") {
-      return NextResponse.json({ error: "designMd required" }, { status: 400 });
-    }
+    const { designMd, apiKey, provider = "anthropic" } = await req.json() as {
+      designMd: string;
+      apiKey: string;
+      provider?: Provider;
+    };
 
-    const hash = hashDesignMd(designMd);
+    if (!designMd) return NextResponse.json({ error: "designMd required" }, { status: 400 });
+    if (!apiKey) return NextResponse.json({ error: "API 키를 입력해 주세요." }, { status: 400 });
+
+    const hash = `${provider}:${hashDesignMd(designMd)}`;
     const cached = getCachedDesign(hash);
-    if (cached) {
-      return NextResponse.json({ pptDesign: cached, cached: true });
-    }
+    if (cached) return NextResponse.json({ pptDesign: cached, cached: true });
 
-    const response = await anthropic.messages.create({
-      model: OPUS_MODEL,
-      max_tokens: 4096,
-      system: [
-        {
-          type: "text",
-          text: TRANSFORM_DESIGN_SYSTEM,
-          cache_control: { type: "ephemeral" },
-        },
-      ],
-      messages: [
-        {
-          role: "user",
-          content: buildTransformUserMessage(designMd),
-        },
-      ],
+    const raw = await callAi({
+      provider,
+      apiKey,
+      systemPrompt: TRANSFORM_DESIGN_SYSTEM,
+      userMessage: buildTransformUserMessage(designMd),
+      maxTokens: 4096,
     });
-
-    const raw = response.content[0];
-    if (raw.type !== "text") {
-      return NextResponse.json({ error: "Unexpected response type" }, { status: 500 });
-    }
 
     let pptDesign: PptDesignSystem;
     try {
-      // Strip any accidental markdown fences
-      const cleaned = raw.text.replace(/^```json?\s*/m, "").replace(/```\s*$/m, "").trim();
-      pptDesign = JSON.parse(cleaned);
+      pptDesign = JSON.parse(stripJsonFences(raw));
     } catch {
-      return NextResponse.json(
-        { error: "Failed to parse design JSON", raw: raw.text },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "JSON 파싱 실패", raw: raw.slice(0, 500) }, { status: 500 });
     }
 
     setCachedDesign(hash, pptDesign);
-
     return NextResponse.json({ pptDesign, cached: false });
   } catch (err) {
     console.error("transform-design error:", err);
