@@ -79,7 +79,7 @@ export default function DesignGallery({ apiKey, provider, onSelect, onNeedApiKey
                 {it.brandName}
               </p>
               <p className="text-zinc-400 dark:text-zinc-600 text-xs mt-0.5">
-                {busy ? "변환 중..." : it.domain}
+                {busy ? "변환 중..." : it.slug}
               </p>
             </button>
           );
@@ -92,7 +92,8 @@ export default function DesignGallery({ apiKey, provider, onSelect, onNeedApiKey
 
 function BrandLogo({ meta }: { meta: SlugMeta }) {
   const [failed, setFailed] = useState(false);
-  const src = `https://logo.clearbit.com/${meta.domain}?size=80`;
+  // getdesign.md 와 동일하게 GitHub 조직 아바타 사용
+  const src = `https://github.com/${meta.githubOrg}.png?size=80`;
 
   if (failed) {
     return (
@@ -106,7 +107,6 @@ function BrandLogo({ meta }: { meta: SlugMeta }) {
     );
   }
 
-  // Plain <img> — Next/Image would require remotePatterns config for clearbit.
   // eslint-disable-next-line @next/next/no-img-element
   return (
     <img
