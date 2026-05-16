@@ -10,4 +10,12 @@ export const SLUGS: string[] = [
   "linear",
   "vercel",
   "stripe",
+  "apple",
+  "figma",
+  "ibm",
+  "lovable",
+  "mastercard",
+  "meta",
+  "nike",
+  "notion",
 ];

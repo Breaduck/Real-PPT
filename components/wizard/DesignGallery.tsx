@@ -40,12 +40,12 @@ export default function DesignGallery({ onSelect }: Props) {
 
   if (items.length === 0) {
     return (
-      <div className="border border-dashed border-zinc-700 rounded-lg p-6 text-center">
-        <p className="text-zinc-400 text-sm">
+      <div className="border border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg p-6 text-center">
+        <p className="text-zinc-600 dark:text-zinc-400 text-sm">
           아직 사전 빌드된 디자인 시스템이 없습니다.
         </p>
-        <p className="text-zinc-600 text-xs mt-2">
-          <code className="bg-zinc-800 px-1.5 py-0.5 rounded">npm run build:design-systems</code> 실행 후 새로고침하세요.
+        <p className="text-zinc-400 dark:text-zinc-600 text-xs mt-2">
+          <code className="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">npm run build:design-systems</code> 실행 후 새로고침하세요.
         </p>
       </div>
     );
@@ -53,7 +53,7 @@ export default function DesignGallery({ onSelect }: Props) {
 
   return (
     <div>
-      <p className="text-zinc-400 text-sm mb-4">
+      <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-4">
         대기업 디자인 시스템을 PPT 전용으로 변환했습니다. 클릭하면 바로 슬라이드 생성 단계로 이동합니다.
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -64,29 +64,29 @@ export default function DesignGallery({ onSelect }: Props) {
               key={it.slug}
               onClick={() => pick(it.slug)}
               disabled={loadingSlug !== null}
-              className="group bg-zinc-900 border border-zinc-800 hover:border-zinc-500 rounded-xl p-4 text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-500 rounded-xl p-4 text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="flex items-center gap-2 mb-3">
                 <div
-                  className="w-5 h-5 rounded-sm ring-1 ring-white/10"
+                  className="w-5 h-5 rounded-sm ring-1 ring-zinc-900/10 dark:ring-white/10"
                   style={{ backgroundColor: it.primaryColor }}
                 />
                 <div
-                  className="w-5 h-5 rounded-sm ring-1 ring-white/10"
+                  className="w-5 h-5 rounded-sm ring-1 ring-zinc-900/10 dark:ring-white/10"
                   style={{ backgroundColor: it.accentColor }}
                 />
               </div>
-              <p className="text-zinc-100 text-sm font-semibold truncate">
+              <p className="text-zinc-900 dark:text-zinc-100 text-sm font-semibold truncate">
                 {it.brandName}
               </p>
-              <p className="text-zinc-600 text-xs mt-0.5">
+              <p className="text-zinc-400 dark:text-zinc-600 text-xs mt-0.5">
                 {busy ? "불러오는 중..." : it.slug}
               </p>
             </button>
           );
         })}
       </div>
-      {error && <p className="mt-3 text-red-400 text-sm">{error}</p>}
+      {error && <p className="mt-3 text-red-500 dark:text-red-400 text-sm">{error}</p>}
     </div>
   );
 }

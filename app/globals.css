@@ -1,21 +1,23 @@
 @import "tailwindcss";
 
+/* class-based dark mode (Tailwind v4) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* ── Print / PDF ── */
@@ -48,7 +50,6 @@ body {
     break-after: page;
     overflow: hidden;
     box-sizing: border-box;
-    /* Remove aspect-ratio so explicit w/h takes effect */
     aspect-ratio: unset !important;
   }
 }

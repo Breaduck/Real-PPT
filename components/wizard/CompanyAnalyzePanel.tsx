@@ -63,12 +63,12 @@ export default function CompanyAnalyzePanel({ busy, error, onAnalyze }: Props) {
 
   return (
     <div>
-      <p className="text-zinc-400 text-sm mb-4">
+      <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-4">
         회사 홈페이지 URL과 (선택) 자주 쓰는 PPT 파일을 업로드하면 자동으로 회사 맞춤 디자인 시스템을 만들어 드립니다.
       </p>
 
       <label className="block text-zinc-500 text-xs uppercase tracking-wider mb-2">
-        회사 홈페이지 URL <span className="text-coral text-red-400">*</span>
+        회사 홈페이지 URL <span className="text-red-500 dark:text-red-400">*</span>
       </label>
       <input
         type="url"
@@ -76,7 +76,7 @@ export default function CompanyAnalyzePanel({ busy, error, onAnalyze }: Props) {
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         disabled={busy}
-        className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-zinc-200 mb-5 focus:outline-none focus:border-zinc-500 transition-colors disabled:opacity-50"
+        className="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg px-4 py-3 text-sm text-zinc-800 dark:text-zinc-200 mb-5 focus:outline-none focus:border-zinc-500 transition-colors disabled:opacity-50"
       />
 
       <label className="block text-zinc-500 text-xs uppercase tracking-wider mb-2">
@@ -90,8 +90,8 @@ export default function CompanyAnalyzePanel({ busy, error, onAnalyze }: Props) {
         className={clsx(
           "w-full border-2 border-dashed rounded-lg px-6 py-8 text-center cursor-pointer transition-all",
           dragOver
-            ? "border-white bg-white/5"
-            : "border-zinc-700 hover:border-zinc-500 bg-zinc-900"
+            ? "border-zinc-900 dark:border-white bg-zinc-100 dark:bg-white/5"
+            : "border-zinc-300 dark:border-zinc-700 hover:border-zinc-500 bg-zinc-50 dark:bg-zinc-900"
         )}
       >
         <input
@@ -103,10 +103,10 @@ export default function CompanyAnalyzePanel({ busy, error, onAnalyze }: Props) {
           onChange={(e) => e.target.files && addFiles(e.target.files)}
           disabled={busy}
         />
-        <p className="text-zinc-400 text-sm">
+        <p className="text-zinc-600 dark:text-zinc-400 text-sm">
           파일을 여기에 드래그하거나 클릭해 선택
         </p>
-        <p className="text-zinc-600 text-xs mt-1">
+        <p className="text-zinc-400 dark:text-zinc-600 text-xs mt-1">
           PPT가 없어도 홈페이지만으로 분석 가능
         </p>
       </div>
@@ -114,21 +114,21 @@ export default function CompanyAnalyzePanel({ busy, error, onAnalyze }: Props) {
       {files.length > 0 && (
         <ul className="mt-3 space-y-1.5">
           {files.map((f, i) => (
-            <li key={`${f.name}-${i}`} className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-md px-3 py-2 text-xs">
-              <span className="text-zinc-300 truncate">
+            <li key={`${f.name}-${i}`} className="flex items-center justify-between bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md px-3 py-2 text-xs">
+              <span className="text-zinc-700 dark:text-zinc-300 truncate">
                 <span className="text-zinc-500">
                   {f.name.toLowerCase().endsWith(".pdf") ? "PDF" : "PPTX"}
                 </span>
                 {" · "}
                 {f.name}
-                <span className="text-zinc-600 ml-2">
+                <span className="text-zinc-400 dark:text-zinc-600 ml-2">
                   {(f.size / 1024 / 1024).toFixed(2)} MB
                 </span>
               </span>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); removeAt(i); }}
-                className="text-zinc-500 hover:text-red-400 transition-colors ml-2"
+                className="text-zinc-500 hover:text-red-500 dark:hover:text-red-400 transition-colors ml-2"
                 disabled={busy}
               >
                 ×
@@ -139,13 +139,13 @@ export default function CompanyAnalyzePanel({ busy, error, onAnalyze }: Props) {
       )}
 
       {(error || localError) && (
-        <p className="mt-3 text-red-400 text-sm">{error ?? localError}</p>
+        <p className="mt-3 text-red-500 dark:text-red-400 text-sm">{error ?? localError}</p>
       )}
 
       <button
         onClick={submit}
         disabled={busy}
-        className="mt-5 w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        className="mt-5 w-full bg-zinc-900 text-white dark:bg-white dark:text-black font-semibold py-3 rounded-lg hover:bg-zinc-700 dark:hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
       >
         {busy ? "분석 중..." : "회사 디자인 시스템 생성하기 →"}
       </button>
