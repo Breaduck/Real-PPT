@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import clsx from "clsx";
 import type { PptDesignSystem, Slide, WizardStep } from "@/lib/types";
 import type { Provider } from "@/lib/ai-providers";
@@ -189,14 +190,22 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-white flex flex-col items-center justify-center px-4 py-16 transition-colors">
-      {/* Theme toggle (top-right) */}
-      <button
-        onClick={toggleTheme}
-        aria-label="테마 전환"
-        className="fixed top-4 right-4 z-40 w-10 h-10 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center transition-colors"
-      >
-        {theme === "dark" ? <SunIcon /> : <MoonIcon />}
-      </button>
+      {/* Top-right nav: 패턴 카탈로그 + 테마 토글 */}
+      <div className="fixed top-4 right-4 z-40 flex items-center gap-2">
+        <Link
+          href="/patterns"
+          className="px-3 h-10 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center text-sm text-zinc-700 dark:text-zinc-300 transition-colors"
+        >
+          패턴 카탈로그
+        </Link>
+        <button
+          onClick={toggleTheme}
+          aria-label="테마 전환"
+          className="w-10 h-10 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center transition-colors"
+        >
+          {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+        </button>
+      </div>
 
       {/* Header */}
       <div className="mb-12 text-center">
