@@ -12,10 +12,14 @@ export interface SlugMeta {
   githubOrg: string;
   primaryColor: string;
   accentColor: string;
+  /** public/ 기준 정적 로고 경로. 있으면 GH avatar 대신 우선 사용. */
+  logoOverride?: string;
+  /** GH avatar 요청 사이즈. 기본 80. 원본이 작은 org (MiniMax)는 200으로 올려 또렷하게. */
+  logoSize?: number;
 }
 
 export const CATALOG: SlugMeta[] = [
-  { slug: "minimax",    brandName: "MiniMax",    githubOrg: "MiniMax-AI",  primaryColor: "#ff5530", accentColor: "#0a0a0a" },
+  { slug: "minimax",    brandName: "MiniMax",    githubOrg: "MiniMax-AI",  primaryColor: "#ff5530", accentColor: "#0a0a0a", logoSize: 200 },
   { slug: "anthropic",  brandName: "Anthropic",  githubOrg: "anthropics",  primaryColor: "#cc785c", accentColor: "#1a1a1a" },
   { slug: "linear",     brandName: "Linear",     githubOrg: "linear",      primaryColor: "#5e6ad2", accentColor: "#0a0a0a" },
   { slug: "vercel",     brandName: "Vercel",     githubOrg: "vercel",      primaryColor: "#000000", accentColor: "#fafafa" },
@@ -26,7 +30,7 @@ export const CATALOG: SlugMeta[] = [
   { slug: "lovable",    brandName: "Lovable",    githubOrg: "lovablelabs", primaryColor: "#ff4d8d", accentColor: "#0a0a0a" },
   { slug: "mastercard", brandName: "Mastercard", githubOrg: "Mastercard",  primaryColor: "#eb001b", accentColor: "#ff5f00" },
   { slug: "meta",       brandName: "Meta",       githubOrg: "facebook",    primaryColor: "#0064e0", accentColor: "#1c2b33" },
-  { slug: "nike",       brandName: "Nike",       githubOrg: "nike",        primaryColor: "#111111", accentColor: "#d4ff00" },
+  { slug: "nike",       brandName: "Nike",       githubOrg: "nike",        primaryColor: "#111111", accentColor: "#d4ff00", logoOverride: "/logos/nike.svg" },
   { slug: "notion",     brandName: "Notion",     githubOrg: "makenotion",  primaryColor: "#000000", accentColor: "#787774" },
 ];
 

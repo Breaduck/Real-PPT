@@ -118,11 +118,21 @@ export type LayoutId =
 
 export type AccentColor = "brand" | "accent" | "surface" | "dark";
 
+export interface SlidePatternIds {
+  skeleton: string;
+  chart?: string;
+  accent?: string;
+}
+
 interface BaseSlide {
   slideNumber: number;
   layoutId: LayoutId;
   accentColor: AccentColor;
   notes?: string;
+  /** Stage 1에서 선택된 패턴 ID들 (디버그·검증·UI 디스플레이용) */
+  patternIds?: SlidePatternIds;
+  /** Stage 2에서 LLM이 생성한 차트/다이어그램 inline SVG (1280×720 좌표계). sanitize 후 dangerouslySetInnerHTML. */
+  inlineSvg?: string;
 }
 
 export interface CoverSlide extends BaseSlide {

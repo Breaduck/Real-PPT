@@ -11,6 +11,7 @@ import Quote from "./Quote";
 import Timeline from "./Timeline";
 import ImageCaption from "./ImageCaption";
 import Closing from "./Closing";
+import ChartFocusedSlide from "./ChartFocusedSlide";
 
 interface Props {
   slide: Slide;
@@ -18,6 +19,11 @@ interface Props {
 }
 
 export default function SlideRenderer({ slide, design }: Props) {
+  // inlineSvg가 있으면 차트 중심 컨테이너로 통일 (layout 컴포넌트는 본문이 가려지므로 우회)
+  if (slide.inlineSvg) {
+    return <ChartFocusedSlide slide={slide} design={design} />;
+  }
+
   switch (slide.layoutId) {
     case "cover":
       return <Cover slide={slide} design={design} />;

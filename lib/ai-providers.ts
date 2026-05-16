@@ -3,21 +3,32 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export type Provider = "anthropic" | "gemini";
 
+export type AnthropicModel = "claude-opus-4-7" | "claude-haiku-4-5-20251001";
+
 export interface AiCallOptions {
   provider: Provider;
   apiKey: string;
   systemPrompt: string;
   userMessage: string;
   maxTokens?: number;
+  /** Anthropic only. 기본 claude-opus-4-7. Gemini에서는 무시됨. */
+  model?: AnthropicModel;
 }
 
 export async function callAi(opts: AiCallOptions): Promise<string> {
-  const { provider, apiKey, systemPrompt, userMessage, maxTokens = 16000 } = opts;
+  const {
+    provider,
+    apiKey,
+    systemPrompt,
+    userMessage,
+    maxTokens = 16000,
+    model = "claude-opus-4-7",
+  } = opts;
 
   if (provider === "anthropic") {
     const client = new Anthropic({ apiKey });
     const response = await client.messages.create({
-      model: "claude-opus-4-7",
+      model,
       max_tokens: maxTokens,
       system: [
         {
@@ -46,11 +57,11 @@ export async function callAi(opts: AiCallOptions): Promise<string> {
 
   if (provider === "gemini") {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
+    const m = genAI.getGenerativeModel({
       model: "gemini-2.5-pro-preview-05-06",
       systemInstruction: systemPrompt,
     });
-    const result = await model.generateContent({
+    const result = await m.generateContent({
       contents: [{ role: "user", parts: [{ text: userMessage }] }],
       generationConfig: { maxOutputTokens: maxTokens },
     });

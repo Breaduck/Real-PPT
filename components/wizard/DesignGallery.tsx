@@ -92,8 +92,17 @@ export default function DesignGallery({ apiKey, provider, onSelect, onNeedApiKey
 
 function BrandLogo({ meta }: { meta: SlugMeta }) {
   const [failed, setFailed] = useState(false);
-  // getdesign.md 와 동일하게 GitHub 조직 아바타 사용
-  const src = `https://github.com/${meta.githubOrg}.png?size=80`;
+
+  // 우선순위: logoOverride(정적 파일) > GH avatar
+  const useOverride = !!meta.logoOverride;
+  const size = meta.logoSize ?? 80;
+  const src = useOverride
+    ? meta.logoOverride!
+    : `https://github.com/${meta.githubOrg}.png?size=${size}`;
+  // GH avatar는 2x DPR 용 retina src도 같이 제공 (override는 SVG라 불필요)
+  const srcSet = useOverride
+    ? undefined
+    : `${src} 1x, https://github.com/${meta.githubOrg}.png?size=${Math.max(size, 160)} 2x`;
 
   if (failed) {
     return (
@@ -111,6 +120,7 @@ function BrandLogo({ meta }: { meta: SlugMeta }) {
   return (
     <img
       src={src}
+      srcSet={srcSet}
       alt={`${meta.brandName} logo`}
       width={40}
       height={40}
