@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import type { PptDesignSystem, DesignSystemManifestItem } from "@/lib/types";
 import type { Provider } from "@/lib/ai-providers";
-import { CATALOG } from "@/config/design-systems";
+import { CATALOG, type SlugMeta } from "@/config/design-systems";
 
 interface Props {
   apiKey: string;
@@ -12,22 +12,11 @@ interface Props {
   onNeedApiKey: () => void;
 }
 
-type Item = {
-  slug: string;
-  brandName: string;
-  primaryColor: string;
-  accentColor: string;
-};
-
 export default function DesignGallery({ apiKey, provider, onSelect, onNeedApiKey }: Props) {
-  const [items, setItems] = useState<Item[]>(
-    // CATALOG 기반으로 즉시 표시 (fetch 결과 기다리지 않음)
-    CATALOG.map((c) => ({ ...c }))
-  );
+  const [items, setItems] = useState<SlugMeta[]>(CATALOG);
   const [loadingSlug, setLoadingSlug] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // 매니페스트(빌드된 디자인 시스템)가 있으면 색상 덮어쓰기
   useEffect(() => {
     fetch("/design-systems/index.json")
       .then((r) => (r.ok ? r.json() : []))
@@ -42,7 +31,7 @@ export default function DesignGallery({ apiKey, provider, onSelect, onNeedApiKey
           })
         );
       })
-      .catch(() => { /* manifest 없어도 OK — CATALOG로 표시 */ });
+      .catch(() => { /* ignore */ });
   }, []);
 
   async function pick(slug: string) {
@@ -71,7 +60,7 @@ export default function DesignGallery({ apiKey, provider, onSelect, onNeedApiKey
   return (
     <div>
       <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-4">
-        대기업 디자인 시스템을 PPT 전용으로 변환합니다. 처음 클릭하면 자동으로 변환(약 10초), 이후는 캐시.
+        대기업 디자인 시스템을 PPT 전용으로 변환합니다. 처음 클릭하면 자동 변환(약 10초), 이후는 캐시.
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {items.map((it) => {
@@ -83,21 +72,14 @@ export default function DesignGallery({ apiKey, provider, onSelect, onNeedApiKey
               disabled={loadingSlug !== null}
               className="group bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-500 rounded-xl p-4 text-left transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <div className="flex items-center gap-2 mb-3">
-                <div
-                  className="w-5 h-5 rounded-sm ring-1 ring-zinc-900/10 dark:ring-white/10"
-                  style={{ backgroundColor: it.primaryColor }}
-                />
-                <div
-                  className="w-5 h-5 rounded-sm ring-1 ring-zinc-900/10 dark:ring-white/10"
-                  style={{ backgroundColor: it.accentColor }}
-                />
+              <div className="mb-3">
+                <BrandLogo meta={it} />
               </div>
               <p className="text-zinc-900 dark:text-zinc-100 text-sm font-semibold truncate">
                 {it.brandName}
               </p>
               <p className="text-zinc-400 dark:text-zinc-600 text-xs mt-0.5">
-                {busy ? "변환 중..." : it.slug}
+                {busy ? "변환 중..." : it.domain}
               </p>
             </button>
           );
@@ -105,5 +87,35 @@ export default function DesignGallery({ apiKey, provider, onSelect, onNeedApiKey
       </div>
       {error && <p className="mt-3 text-red-500 dark:text-red-400 text-sm">{error}</p>}
     </div>
+  );
+}
+
+function BrandLogo({ meta }: { meta: SlugMeta }) {
+  const [failed, setFailed] = useState(false);
+  const src = `https://logo.clearbit.com/${meta.domain}?size=80`;
+
+  if (failed) {
+    return (
+      <div
+        className="w-10 h-10 rounded-md flex items-center justify-center text-sm font-bold text-white"
+        style={{ backgroundColor: meta.primaryColor }}
+        aria-label={meta.brandName}
+      >
+        {meta.brandName.charAt(0)}
+      </div>
+    );
+  }
+
+  // Plain <img> — Next/Image would require remotePatterns config for clearbit.
+  // eslint-disable-next-line @next/next/no-img-element
+  return (
+    <img
+      src={src}
+      alt={`${meta.brandName} logo`}
+      width={40}
+      height={40}
+      onError={() => setFailed(true)}
+      className="w-10 h-10 rounded-md object-contain bg-white ring-1 ring-zinc-900/5 dark:ring-white/10"
+    />
   );
 }
