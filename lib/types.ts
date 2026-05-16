@@ -81,6 +81,25 @@ export interface PptDesignSystem {
   };
   designPrinciples: string[];
   doNot: string[];
+
+  // ---- PPT 전용 옵셔널 확장 (deck7 황금 기준) ----
+  slideContainer?: {
+    width: number;
+    height: number;
+    aspectRatio: string;
+  };
+  componentVariants?: {
+    pageNumberFormat: "NN" | "01/30" | "1" | "none";
+    bulletMarker: "•" | "—" | "›" | "/";
+    coverLayout: "split" | "centered" | "asymmetric-left";
+  };
+  forbiddenPatterns?: string[];
+  sourceMeta?: {
+    kind: "paste" | "url" | "catalog";
+    sourceUrl?: string;
+    slug?: string;
+    fileNames?: string[];
+  };
 }
 
 // ---- Slide ----
@@ -223,9 +242,21 @@ export interface GenerateDeckResponse {
 // ---- Wizard state ----
 
 export type WizardStep =
+  | "gallery"
   | "paste-design"
+  | "analyze-company"
+  | "analyze-loading"
   | "transform-loading"
   | "design-preview"
   | "paste-content"
   | "generate-loading"
   | "deck-view";
+
+// ---- Gallery manifest ----
+
+export interface DesignSystemManifestItem {
+  slug: string;
+  brandName: string;
+  primaryColor: string;
+  accentColor: string;
+}

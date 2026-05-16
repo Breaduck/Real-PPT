@@ -5,6 +5,10 @@ import clsx from "clsx";
 import type { PptDesignSystem, Slide, WizardStep } from "@/lib/types";
 import type { Provider } from "@/lib/ai-providers";
 import Deck from "@/components/deck/Deck";
+import DesignGallery from "@/components/wizard/DesignGallery";
+import CompanyAnalyzePanel from "@/components/wizard/CompanyAnalyzePanel";
+
+type DesignTab = "gallery" | "analyze" | "paste";
 
 const PLACEHOLDER_DESIGN_MD = `# paste design.md here
 
@@ -31,6 +35,7 @@ MiniMax의 통합 멀티모달 엔진은 텍스트-이미지-음성을 단일 AP
 
 export default function Home() {
   const [step, setStep] = useState<WizardStep>("paste-design");
+  const [tab, setTab] = useState<DesignTab>("gallery");
   const [designMd, setDesignMd] = useState("");
   const [pptDesign, setPptDesign] = useState<PptDesignSystem | null>(null);
   const [content, setContent] = useState("");
@@ -79,6 +84,35 @@ export default function Home() {
       setError(String(e));
       setStep("paste-design");
     }
+  }
+
+  async function handleAnalyzeCompany(url: string, files: File[]) {
+    if (!apiKey.trim()) { setError("먼저 API 키를 입력해 주세요."); setShowSettings(true); return; }
+    setError(null);
+    setStep("analyze-loading");
+
+    try {
+      const form = new FormData();
+      form.append("url", url);
+      form.append("apiKey", apiKey);
+      form.append("provider", provider);
+      for (const f of files) form.append("files", f, f.name);
+
+      const res = await fetch("/api/analyze-company", { method: "POST", body: form });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error ?? "분석 실패");
+      setPptDesign(data.pptDesign);
+      setStep("design-preview");
+    } catch (e) {
+      setError(String(e));
+      setStep("paste-design");
+    }
+  }
+
+  function handleGallerySelect(ds: PptDesignSystem) {
+    setError(null);
+    setPptDesign(ds);
+    setStep("design-preview");
   }
 
   async function handleGenerateDeck() {
@@ -183,33 +217,89 @@ export default function Home() {
           </div>
         )}
 
-        {/* Step 1 */}
-        {(step === "paste-design" || step === "transform-loading") && (
-          <Panel title="① design.md 붙여넣기">
-            <p className="text-zinc-400 text-sm mb-4">
-              <a href="https://getdesign.md" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
-                getdesign.md
-              </a>{" "}
-              에서 원하는 브랜드의 DESIGN.md를 복사해 붙여넣으세요.
-              <span className="text-zinc-600"> (MiniMax, Stripe, Anthropic, Linear, Tesla 등 71+)</span>
-            </p>
-            <textarea
-              className="w-full h-64 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-zinc-200 resize-none font-mono focus:outline-none focus:border-zinc-500 transition-colors"
-              placeholder={PLACEHOLDER_DESIGN_MD}
-              value={designMd}
-              onChange={(e) => setDesignMd(e.target.value)}
-              disabled={step === "transform-loading"}
-            />
-            {error && <p className="mt-2 text-red-400 text-sm">{error}</p>}
-            <button
-              onClick={handleTransformDesign}
-              disabled={step === "transform-loading"}
-              className="mt-4 w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {step === "transform-loading" ? (
-                <span className="flex items-center justify-center gap-2"><Spinner /> 디자인 분석 중...</span>
-              ) : "디자인 분석하기 →"}
-            </button>
+        {/* Step 1 — 3-tab design source */}
+        {(step === "paste-design" ||
+          step === "transform-loading" ||
+          step === "analyze-loading") && (
+          <Panel title="① 디자인 시스템 선택">
+            <div className="flex gap-1 mb-5 border-b border-zinc-800">
+              {([
+                { id: "gallery", label: "갤러리", hint: "사전 빌드된 회사" },
+                { id: "analyze", label: "내 회사 분석", hint: "URL + PPT 업로드" },
+                { id: "paste", label: "직접 붙여넣기", hint: "design.md 텍스트" },
+              ] as const).map(({ id, label, hint }) => (
+                <button
+                  key={id}
+                  onClick={() => { setTab(id); setError(null); }}
+                  disabled={step !== "paste-design"}
+                  className={clsx(
+                    "px-4 py-2.5 text-sm border-b-2 transition-colors -mb-px disabled:opacity-50",
+                    tab === id
+                      ? "border-white text-white"
+                      : "border-transparent text-zinc-500 hover:text-zinc-300"
+                  )}
+                >
+                  <div className="font-medium">{label}</div>
+                  <div className="text-xs text-zinc-600 mt-0.5">{hint}</div>
+                </button>
+              ))}
+            </div>
+
+            {step === "analyze-loading" && (
+              <div className="flex flex-col items-center py-10 gap-4">
+                <Spinner size={40} />
+                <div className="text-center">
+                  <p className="text-white font-medium">회사 디자인 시스템 생성 중...</p>
+                  <p className="text-zinc-500 text-sm mt-1">홈페이지와 첨부 파일 분석 → 톤앤매너 합성</p>
+                </div>
+              </div>
+            )}
+
+            {step === "transform-loading" && (
+              <div className="flex flex-col items-center py-10 gap-4">
+                <Spinner size={40} />
+                <div className="text-center">
+                  <p className="text-white font-medium">디자인 분석 중...</p>
+                  <p className="text-zinc-500 text-sm mt-1">design.md를 PPT 전용 토큰으로 변환합니다</p>
+                </div>
+              </div>
+            )}
+
+            {step === "paste-design" && tab === "gallery" && (
+              <DesignGallery onSelect={handleGallerySelect} />
+            )}
+
+            {step === "paste-design" && tab === "analyze" && (
+              <CompanyAnalyzePanel
+                busy={false}
+                error={error}
+                onAnalyze={handleAnalyzeCompany}
+              />
+            )}
+
+            {step === "paste-design" && tab === "paste" && (
+              <div>
+                <p className="text-zinc-400 text-sm mb-4">
+                  <a href="https://getdesign.md" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">
+                    getdesign.md
+                  </a>{" "}
+                  에서 원하는 브랜드의 DESIGN.md를 복사해 붙여넣으세요.
+                </p>
+                <textarea
+                  className="w-full h-64 bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-zinc-200 resize-none font-mono focus:outline-none focus:border-zinc-500 transition-colors"
+                  placeholder={PLACEHOLDER_DESIGN_MD}
+                  value={designMd}
+                  onChange={(e) => setDesignMd(e.target.value)}
+                />
+                {error && <p className="mt-2 text-red-400 text-sm">{error}</p>}
+                <button
+                  onClick={handleTransformDesign}
+                  className="mt-4 w-full bg-white text-black font-semibold py-3 rounded-lg hover:bg-zinc-200 transition-all"
+                >
+                  디자인 분석하기 →
+                </button>
+              </div>
+            )}
           </Panel>
         )}
 
@@ -434,7 +524,12 @@ function StepIndicator({ step }: { step: WizardStep }) {
     { id: "generate-loading", label: "생성" },
     { id: "deck-view", label: "완료" },
   ];
-  const activeIdx = steps.findIndex((s) => s.id === step);
+  // analyze-loading / transform-loading 은 1단계(디자인)에 머무는 것으로 본다
+  const normalizedStep: WizardStep =
+    step === "analyze-loading" || step === "transform-loading"
+      ? "paste-design"
+      : step;
+  const activeIdx = steps.findIndex((s) => s.id === normalizedStep);
   return (
     <div className="flex items-center gap-0">
       {steps.map((s, i) => (
