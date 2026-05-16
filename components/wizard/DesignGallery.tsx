@@ -2,31 +2,65 @@
 
 import { useEffect, useState } from "react";
 import type { PptDesignSystem, DesignSystemManifestItem } from "@/lib/types";
+import type { Provider } from "@/lib/ai-providers";
+import { CATALOG } from "@/config/design-systems";
 
 interface Props {
+  apiKey: string;
+  provider: Provider;
   onSelect: (design: PptDesignSystem) => void;
+  onNeedApiKey: () => void;
 }
 
-export default function DesignGallery({ onSelect }: Props) {
-  const [items, setItems] = useState<DesignSystemManifestItem[] | null>(null);
+type Item = {
+  slug: string;
+  brandName: string;
+  primaryColor: string;
+  accentColor: string;
+};
+
+export default function DesignGallery({ apiKey, provider, onSelect, onNeedApiKey }: Props) {
+  const [items, setItems] = useState<Item[]>(
+    // CATALOG 기반으로 즉시 표시 (fetch 결과 기다리지 않음)
+    CATALOG.map((c) => ({ ...c }))
+  );
   const [loadingSlug, setLoadingSlug] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // 매니페스트(빌드된 디자인 시스템)가 있으면 색상 덮어쓰기
   useEffect(() => {
     fetch("/design-systems/index.json")
       .then((r) => (r.ok ? r.json() : []))
-      .then((data: DesignSystemManifestItem[]) => setItems(data))
-      .catch(() => setItems([]));
+      .then((manifest: DesignSystemManifestItem[]) => {
+        if (!Array.isArray(manifest) || manifest.length === 0) return;
+        setItems((prev) =>
+          prev.map((it) => {
+            const built = manifest.find((m) => m.slug === it.slug);
+            return built
+              ? { ...it, brandName: built.brandName, primaryColor: built.primaryColor, accentColor: built.accentColor }
+              : it;
+          })
+        );
+      })
+      .catch(() => { /* manifest 없어도 OK — CATALOG로 표시 */ });
   }, []);
 
   async function pick(slug: string) {
+    if (!apiKey.trim()) {
+      onNeedApiKey();
+      return;
+    }
     setLoadingSlug(slug);
     setError(null);
     try {
-      const res = await fetch(`/design-systems/${slug}.json`);
-      if (!res.ok) throw new Error(`디자인 시스템을 불러올 수 없습니다: ${slug}`);
-      const ds = (await res.json()) as PptDesignSystem;
-      onSelect(ds);
+      const res = await fetch("/api/transform-design", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ slug, apiKey, provider }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error ?? "디자인 시스템 변환 실패");
+      onSelect(data.pptDesign as PptDesignSystem);
     } catch (e) {
       setError(String(e));
     } finally {
@@ -34,27 +68,10 @@ export default function DesignGallery({ onSelect }: Props) {
     }
   }
 
-  if (items === null) {
-    return <p className="text-zinc-500 text-sm">갤러리를 불러오는 중...</p>;
-  }
-
-  if (items.length === 0) {
-    return (
-      <div className="border border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg p-6 text-center">
-        <p className="text-zinc-600 dark:text-zinc-400 text-sm">
-          아직 사전 빌드된 디자인 시스템이 없습니다.
-        </p>
-        <p className="text-zinc-400 dark:text-zinc-600 text-xs mt-2">
-          <code className="bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">npm run build:design-systems</code> 실행 후 새로고침하세요.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div>
       <p className="text-zinc-600 dark:text-zinc-400 text-sm mb-4">
-        대기업 디자인 시스템을 PPT 전용으로 변환했습니다. 클릭하면 바로 슬라이드 생성 단계로 이동합니다.
+        대기업 디자인 시스템을 PPT 전용으로 변환합니다. 처음 클릭하면 자동으로 변환(약 10초), 이후는 캐시.
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {items.map((it) => {
@@ -80,7 +97,7 @@ export default function DesignGallery({ onSelect }: Props) {
                 {it.brandName}
               </p>
               <p className="text-zinc-400 dark:text-zinc-600 text-xs mt-0.5">
-                {busy ? "불러오는 중..." : it.slug}
+                {busy ? "변환 중..." : it.slug}
               </p>
             </button>
           );

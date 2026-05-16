@@ -289,7 +289,12 @@ export default function Home() {
             )}
 
             {step === "paste-design" && tab === "gallery" && (
-              <DesignGallery onSelect={handleGallerySelect} />
+              <DesignGallery
+                apiKey={apiKey}
+                provider={provider}
+                onSelect={handleGallerySelect}
+                onNeedApiKey={() => setShowSettings(true)}
+              />
             )}
 
             {step === "paste-design" && tab === "analyze" && (
