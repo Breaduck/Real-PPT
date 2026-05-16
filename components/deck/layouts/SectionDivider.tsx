@@ -1,6 +1,7 @@
 "use client";
 
 import SlideFrame from "../SlideFrame";
+import EditableText from "../EditableText";
 import type { SectionDividerSlide, PptDesignSystem } from "@/lib/types";
 
 interface Props {
@@ -15,15 +16,12 @@ export default function SectionDivider({ slide, design }: Props) {
 
   return (
     <SlideFrame accentColor={slide.accentColor} design={design}>
-      {/* Left vertical accent bar */}
       <div
         className="absolute left-0 top-0 h-full w-2"
         style={{ backgroundColor: design.colors.accent }}
       />
 
-      {/* Asymmetric layout — chapter number large left, title right-offset */}
       <div className="flex items-center h-full gap-16">
-        {/* Chapter number — giant, decorative */}
         <div
           style={{
             fontSize: "200px",
@@ -38,7 +36,6 @@ export default function SectionDivider({ slide, design }: Props) {
           {slide.chapterNumber}
         </div>
 
-        {/* Title and subtitle */}
         <div className="flex flex-col justify-center">
           <p
             className="mb-3 uppercase"
@@ -53,7 +50,9 @@ export default function SectionDivider({ slide, design }: Props) {
             Section {slide.chapterNumber}
           </p>
 
-          <h2
+          <EditableText
+            id="chapterTitle"
+            tag="h2"
             style={{
               fontSize: design.typography.display.fontSize,
               fontWeight: design.typography.display.fontWeight,
@@ -64,10 +63,12 @@ export default function SectionDivider({ slide, design }: Props) {
             }}
           >
             {slide.chapterTitle}
-          </h2>
+          </EditableText>
 
           {slide.chapterSubtitle && (
-            <p
+            <EditableText
+              id="chapterSubtitle"
+              tag="p"
               className="mt-4"
               style={{
                 fontSize: design.typography.subheading.fontSize,
@@ -76,7 +77,7 @@ export default function SectionDivider({ slide, design }: Props) {
               }}
             >
               {slide.chapterSubtitle}
-            </p>
+            </EditableText>
           )}
         </div>
       </div>

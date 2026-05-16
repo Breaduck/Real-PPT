@@ -1,6 +1,7 @@
 "use client";
 
 import SlideFrame from "../SlideFrame";
+import EditableText from "../EditableText";
 import type { TitleBulletsSlide, PptDesignSystem } from "@/lib/types";
 
 interface Props {
@@ -27,10 +28,11 @@ export default function TitleBullets({ slide, design }: Props) {
   return (
     <SlideFrame accentColor={slide.accentColor} design={design}>
       <div className="flex flex-col h-full">
-        {/* Header */}
         <div className="flex-shrink-0" style={{ marginBottom: design.spacing.sectionGap }}>
           {slide.eyebrow && (
-            <p
+            <EditableText
+              id="eyebrow"
+              tag="p"
               className="mb-3 uppercase"
               style={{
                 fontSize: design.typography.caption.fontSize,
@@ -41,9 +43,11 @@ export default function TitleBullets({ slide, design }: Props) {
               }}
             >
               {slide.eyebrow}
-            </p>
+            </EditableText>
           )}
-          <h2
+          <EditableText
+            id="title"
+            tag="h2"
             style={{
               fontSize: design.typography.heading.fontSize,
               fontWeight: design.typography.heading.fontWeight,
@@ -53,16 +57,13 @@ export default function TitleBullets({ slide, design }: Props) {
             }}
           >
             {slide.title}
-          </h2>
-
-          {/* Underline accent */}
+          </EditableText>
           <div
             className="mt-3 h-0.5 w-16"
             style={{ backgroundColor: design.colors.accent }}
           />
         </div>
 
-        {/* Bullets */}
         <div
           className="flex flex-col flex-1 justify-center"
           style={{ gap: design.spacing.itemGap }}
@@ -82,7 +83,9 @@ export default function TitleBullets({ slide, design }: Props) {
                 {getBulletMarker(i)}
               </span>
               <div>
-                <p
+                <EditableText
+                  id={`bullet-${i}`}
+                  tag="p"
                   style={{
                     fontSize: design.typography.subheading.fontSize,
                     fontWeight: design.typography.subheading.fontWeight,
@@ -92,9 +95,11 @@ export default function TitleBullets({ slide, design }: Props) {
                   }}
                 >
                   {bullet.text}
-                </p>
+                </EditableText>
                 {bullet.subtext && (
-                  <p
+                  <EditableText
+                    id={`bullet-${i}-sub`}
+                    tag="p"
                     className="mt-1"
                     style={{
                       fontSize: design.typography.body.fontSize,
@@ -103,7 +108,7 @@ export default function TitleBullets({ slide, design }: Props) {
                     }}
                   >
                     {bullet.subtext}
-                  </p>
+                  </EditableText>
                 )}
               </div>
             </div>

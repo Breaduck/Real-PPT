@@ -1,6 +1,7 @@
 "use client";
 
 import SlideFrame from "../SlideFrame";
+import EditableText from "../EditableText";
 import type { TimelineSlide, PptDesignSystem } from "@/lib/types";
 
 interface Props {
@@ -15,9 +16,10 @@ export default function Timeline({ slide, design }: Props) {
   return (
     <SlideFrame accentColor={slide.accentColor} design={design}>
       <div className="flex flex-col h-full">
-        {/* Title */}
         <div style={{ marginBottom: design.spacing.sectionGap, flexShrink: 0 }}>
-          <h2
+          <EditableText
+            id="title"
+            tag="h2"
             style={{
               fontSize: design.typography.heading.fontSize,
               fontWeight: design.typography.heading.fontWeight,
@@ -27,16 +29,14 @@ export default function Timeline({ slide, design }: Props) {
             }}
           >
             {slide.title}
-          </h2>
+          </EditableText>
           <div
             className="mt-3 h-0.5 w-12"
             style={{ backgroundColor: design.colors.accent }}
           />
         </div>
 
-        {/* Steps — horizontal timeline */}
         <div className="flex flex-1 items-center relative">
-          {/* Connecting line */}
           <div
             className="absolute top-1/2 left-0 right-0 h-px -translate-y-1/2"
             style={{ backgroundColor: `${design.colors.accent}30` }}
@@ -51,11 +51,7 @@ export default function Timeline({ slide, design }: Props) {
               : design.colors.accent;
 
             return (
-              <div
-                key={i}
-                className="flex-1 flex flex-col items-center relative"
-              >
-                {/* Step label above line */}
+              <div key={i} className="flex-1 flex flex-col items-center relative">
                 <p
                   className="mb-4 text-center"
                   style={{
@@ -70,16 +66,13 @@ export default function Timeline({ slide, design }: Props) {
                   {step.step}
                 </p>
 
-                {/* Dot */}
                 <div
                   className="relative z-10 flex items-center justify-center rounded-full"
                   style={{
                     width: isHighlighted ? "48px" : "32px",
                     height: isHighlighted ? "48px" : "32px",
                     backgroundColor: dotColor,
-                    boxShadow: isHighlighted
-                      ? `0 0 0 6px ${dotColor}25`
-                      : "none",
+                    boxShadow: isHighlighted ? `0 0 0 6px ${dotColor}25` : "none",
                     transition: "all 0.2s",
                   }}
                 >
@@ -95,8 +88,9 @@ export default function Timeline({ slide, design }: Props) {
                   </span>
                 </div>
 
-                {/* Label below dot */}
-                <p
+                <EditableText
+                  id={`step-${i}-label`}
+                  tag="p"
                   className="mt-4 text-center"
                   style={{
                     fontSize: design.typography.body.fontSize,
@@ -108,10 +102,12 @@ export default function Timeline({ slide, design }: Props) {
                   }}
                 >
                   {step.label}
-                </p>
+                </EditableText>
 
                 {step.description && (
-                  <p
+                  <EditableText
+                    id={`step-${i}-desc`}
+                    tag="p"
                     className="mt-1 text-center"
                     style={{
                       fontSize: design.typography.caption.fontSize,
@@ -121,7 +117,7 @@ export default function Timeline({ slide, design }: Props) {
                     }}
                   >
                     {step.description}
-                  </p>
+                  </EditableText>
                 )}
               </div>
             );

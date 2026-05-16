@@ -1,6 +1,7 @@
 "use client";
 
 import SlideFrame from "../SlideFrame";
+import EditableText from "../EditableText";
 import type { ClosingSlide, PptDesignSystem } from "@/lib/types";
 
 interface Props {
@@ -15,19 +16,19 @@ export default function Closing({ slide, design }: Props) {
 
   return (
     <SlideFrame accentColor={slide.accentColor} design={design}>
-      {/* Top right accent stripe */}
       <div
         className="absolute top-0 right-0 w-1/3 h-2"
         style={{ backgroundColor: design.colors.accent }}
       />
-      {/* Bottom left accent stripe */}
       <div
         className="absolute bottom-0 left-0 w-1/4 h-2"
         style={{ backgroundColor: design.colors.accent }}
       />
 
       <div className="flex flex-col items-center justify-center h-full text-center">
-        <h2
+        <EditableText
+          id="headline"
+          tag="h2"
           style={{
             fontSize: design.typography.display.fontSize,
             fontWeight: design.typography.display.fontWeight,
@@ -39,10 +40,12 @@ export default function Closing({ slide, design }: Props) {
           }}
         >
           {slide.headline}
-        </h2>
+        </EditableText>
 
         {slide.subheadline && (
-          <p
+          <EditableText
+            id="subheadline"
+            tag="p"
             className="mt-6"
             style={{
               fontSize: design.typography.subheading.fontSize,
@@ -52,12 +55,14 @@ export default function Closing({ slide, design }: Props) {
             }}
           >
             {slide.subheadline}
-          </p>
+          </EditableText>
         )}
 
         {slide.ctaLabel && (
           <div className="mt-12">
-            <div
+            <EditableText
+              id="ctaLabel"
+              tag="div"
               className="inline-block px-8 py-4"
               style={{
                 backgroundColor: design.colors.accent,
@@ -69,9 +74,11 @@ export default function Closing({ slide, design }: Props) {
               }}
             >
               {slide.ctaLabel}
-            </div>
+            </EditableText>
             {slide.ctaDetail && (
-              <p
+              <EditableText
+                id="ctaDetail"
+                tag="p"
                 className="mt-3"
                 style={{
                   fontSize: design.typography.caption.fontSize,
@@ -79,7 +86,7 @@ export default function Closing({ slide, design }: Props) {
                 }}
               >
                 {slide.ctaDetail}
-              </p>
+              </EditableText>
             )}
           </div>
         )}

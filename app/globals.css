@@ -18,23 +18,37 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* Slide deck print styles */
+/* ── Print / PDF ── */
 @media print {
-  body {
-    background: white;
+  @page {
+    size: 10in 5.625in;
+    margin: 0;
+  }
+
+  html, body {
+    width: 10in;
+    height: 5.625in;
     margin: 0;
     padding: 0;
+    background: white;
   }
 
   .no-print {
     display: none !important;
   }
 
+  .print-only {
+    display: block !important;
+  }
+
   .slide-page {
+    width: 10in !important;
+    height: 5.625in !important;
     page-break-after: always;
     break-after: page;
-    width: 100vw;
-    height: 100vh;
     overflow: hidden;
+    box-sizing: border-box;
+    /* Remove aspect-ratio so explicit w/h takes effect */
+    aspect-ratio: unset !important;
   }
 }

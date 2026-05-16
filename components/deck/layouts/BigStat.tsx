@@ -1,6 +1,7 @@
 "use client";
 
 import SlideFrame from "../SlideFrame";
+import EditableText from "../EditableText";
 import type { BigStatSlide, PptDesignSystem } from "@/lib/types";
 
 interface Props {
@@ -16,7 +17,6 @@ export default function BigStat({ slide, design }: Props) {
 
   return (
     <SlideFrame accentColor={slide.accentColor} design={design}>
-      {/* Background large decorative stat (ghost) */}
       <div
         className="absolute inset-0 flex items-center justify-center pointer-events-none select-none"
         style={{
@@ -31,10 +31,11 @@ export default function BigStat({ slide, design }: Props) {
         {slide.stat}
       </div>
 
-      {/* Content */}
       <div className="relative flex flex-col items-center justify-center h-full text-center">
         {slide.eyebrow && (
-          <p
+          <EditableText
+            id="eyebrow"
+            tag="p"
             className="mb-6 uppercase"
             style={{
               fontSize: design.typography.caption.fontSize,
@@ -45,12 +46,13 @@ export default function BigStat({ slide, design }: Props) {
             }}
           >
             {slide.eyebrow}
-          </p>
+          </EditableText>
         )}
 
-        {/* The big number */}
         <div className="flex items-end gap-2">
-          <span
+          <EditableText
+            id="stat"
+            tag="span"
             style={{
               fontSize: design.typography.stat.fontSize,
               fontWeight: design.typography.stat.fontWeight,
@@ -61,9 +63,11 @@ export default function BigStat({ slide, design }: Props) {
             }}
           >
             {slide.stat}
-          </span>
+          </EditableText>
           {slide.unit && (
-            <span
+            <EditableText
+              id="unit"
+              tag="span"
               className="mb-4"
               style={{
                 fontSize: design.typography.heading.fontSize,
@@ -73,11 +77,13 @@ export default function BigStat({ slide, design }: Props) {
               }}
             >
               {slide.unit}
-            </span>
+            </EditableText>
           )}
         </div>
 
-        <p
+        <EditableText
+          id="caption"
+          tag="p"
           className="mt-4"
           style={{
             fontSize: design.typography.subheading.fontSize,
@@ -88,10 +94,12 @@ export default function BigStat({ slide, design }: Props) {
           }}
         >
           {slide.caption}
-        </p>
+        </EditableText>
 
         {slide.context && (
-          <p
+          <EditableText
+            id="context"
+            tag="p"
             className="mt-4"
             style={{
               fontSize: design.typography.body.fontSize,
@@ -101,7 +109,7 @@ export default function BigStat({ slide, design }: Props) {
             }}
           >
             {slide.context}
-          </p>
+          </EditableText>
         )}
       </div>
 

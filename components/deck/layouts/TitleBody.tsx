@@ -1,6 +1,7 @@
 "use client";
 
 import SlideFrame from "../SlideFrame";
+import EditableText from "../EditableText";
 import type { TitleBodySlide, PptDesignSystem } from "@/lib/types";
 
 interface Props {
@@ -14,7 +15,6 @@ export default function TitleBody({ slide, design }: Props) {
 
   return (
     <SlideFrame accentColor={slide.accentColor} design={design}>
-      {/* Top accent line */}
       <div
         className="absolute top-0 left-0 h-1 w-24"
         style={{ backgroundColor: design.colors.accent }}
@@ -22,7 +22,9 @@ export default function TitleBody({ slide, design }: Props) {
 
       <div className="flex flex-col justify-center h-full max-w-[75%]">
         {slide.eyebrow && (
-          <p
+          <EditableText
+            id="eyebrow"
+            tag="p"
             className="mb-4 uppercase"
             style={{
               fontSize: design.typography.caption.fontSize,
@@ -33,10 +35,12 @@ export default function TitleBody({ slide, design }: Props) {
             }}
           >
             {slide.eyebrow}
-          </p>
+          </EditableText>
         )}
 
-        <h2
+        <EditableText
+          id="title"
+          tag="h2"
           style={{
             fontSize: design.typography.heading.fontSize,
             fontWeight: design.typography.heading.fontWeight,
@@ -48,9 +52,11 @@ export default function TitleBody({ slide, design }: Props) {
           }}
         >
           {slide.title}
-        </h2>
+        </EditableText>
 
-        <p
+        <EditableText
+          id="body"
+          tag="p"
           style={{
             fontSize: design.typography.body.fontSize,
             fontWeight: design.typography.body.fontWeight,
@@ -61,7 +67,7 @@ export default function TitleBody({ slide, design }: Props) {
           }}
         >
           {slide.body}
-        </p>
+        </EditableText>
       </div>
 
       <div

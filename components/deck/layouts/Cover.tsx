@@ -1,6 +1,7 @@
 "use client";
 
 import SlideFrame from "../SlideFrame";
+import EditableText from "../EditableText";
 import type { CoverSlide, PptDesignSystem } from "@/lib/types";
 
 interface Props {
@@ -15,13 +16,10 @@ export default function Cover({ slide, design }: Props) {
 
   return (
     <SlideFrame accentColor={slide.accentColor} design={design}>
-      {/* Signature decoration — diagonal accent bar top-right */}
       <div
         className="absolute top-0 right-0 w-1/3 h-2"
         style={{ backgroundColor: design.colors.accent }}
       />
-
-      {/* Bottom left accent bar */}
       <div
         className="absolute bottom-0 left-0 w-1/4 h-1"
         style={{ backgroundColor: design.colors.accent, opacity: 0.6 }}
@@ -29,8 +27,10 @@ export default function Cover({ slide, design }: Props) {
 
       <div className="flex flex-col justify-center h-full max-w-[70%]">
         {slide.kicker && (
-          <p
-            className="mb-6 uppercase tracking-widest"
+          <EditableText
+            id="kicker"
+            tag="p"
+            className="mb-6 uppercase"
             style={{
               fontSize: design.typography.caption.fontSize,
               fontWeight: 600,
@@ -40,10 +40,12 @@ export default function Cover({ slide, design }: Props) {
             }}
           >
             {slide.kicker}
-          </p>
+          </EditableText>
         )}
 
-        <h1
+        <EditableText
+          id="title"
+          tag="h1"
           style={{
             fontSize: design.typography.hero.fontSize,
             fontWeight: design.typography.hero.fontWeight,
@@ -54,10 +56,12 @@ export default function Cover({ slide, design }: Props) {
           }}
         >
           {slide.title}
-        </h1>
+        </EditableText>
 
         {slide.subtitle && (
-          <p
+          <EditableText
+            id="subtitle"
+            tag="p"
             className="mt-6"
             style={{
               fontSize: design.typography.subheading.fontSize,
@@ -68,11 +72,13 @@ export default function Cover({ slide, design }: Props) {
             }}
           >
             {slide.subtitle}
-          </p>
+          </EditableText>
         )}
 
         {slide.date && (
-          <p
+          <EditableText
+            id="date"
+            tag="p"
             className="mt-10"
             style={{
               fontSize: design.typography.caption.fontSize,
@@ -81,17 +87,13 @@ export default function Cover({ slide, design }: Props) {
             }}
           >
             {slide.date}
-          </p>
+          </EditableText>
         )}
       </div>
 
-      {/* Slide number */}
       <div
         className="absolute bottom-0 right-0 pr-8 pb-6"
-        style={{
-          fontSize: design.typography.caption.fontSize,
-          color: mutedColor,
-        }}
+        style={{ fontSize: design.typography.caption.fontSize, color: mutedColor }}
       >
         {slide.slideNumber}
       </div>

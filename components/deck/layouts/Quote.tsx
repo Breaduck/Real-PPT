@@ -1,6 +1,7 @@
 "use client";
 
 import SlideFrame from "../SlideFrame";
+import EditableText from "../EditableText";
 import type { QuoteSlide, PptDesignSystem } from "@/lib/types";
 
 interface Props {
@@ -15,30 +16,28 @@ export default function Quote({ slide, design }: Props) {
 
   return (
     <SlideFrame accentColor={slide.accentColor} design={design}>
-      {/* Giant quotation mark — decorative */}
       <div
         className="absolute top-4 left-12 select-none pointer-events-none"
         style={{
           fontSize: "280px",
           lineHeight: 1,
           fontWeight: 900,
-          color: isDark
-            ? `${design.colors.accent}25`
-            : `${design.colors.brandPrimary}12`,
+          color: isDark ? `${design.colors.accent}25` : `${design.colors.brandPrimary}12`,
           fontFamily: design.fontFamilies.heading,
         }}
       >
         &ldquo;
       </div>
 
-      {/* Left accent bar */}
       <div
         className="absolute left-0 top-1/4 h-1/2 w-1.5"
         style={{ backgroundColor: design.colors.accent }}
       />
 
       <div className="relative flex flex-col justify-center h-full pl-8">
-        <blockquote
+        <EditableText
+          id="quote"
+          tag="blockquote"
           style={{
             fontSize: design.typography.display.fontSize,
             fontWeight: design.typography.display.fontWeight,
@@ -49,8 +48,8 @@ export default function Quote({ slide, design }: Props) {
             maxWidth: "24ch",
           }}
         >
-          &ldquo;{slide.quote}&rdquo;
-        </blockquote>
+          {`“${slide.quote}”`}
+        </EditableText>
 
         {(slide.attribution || slide.role) && (
           <div className="mt-8 flex items-center gap-3">
@@ -60,7 +59,9 @@ export default function Quote({ slide, design }: Props) {
             />
             <div>
               {slide.attribution && (
-                <p
+                <EditableText
+                  id="attribution"
+                  tag="p"
                   style={{
                     fontSize: design.typography.body.fontSize,
                     fontWeight: 600,
@@ -69,17 +70,19 @@ export default function Quote({ slide, design }: Props) {
                   }}
                 >
                   {slide.attribution}
-                </p>
+                </EditableText>
               )}
               {slide.role && (
-                <p
+                <EditableText
+                  id="role"
+                  tag="p"
                   style={{
                     fontSize: design.typography.caption.fontSize,
                     color: mutedColor,
                   }}
                 >
                   {slide.role}
-                </p>
+                </EditableText>
               )}
             </div>
           </div>

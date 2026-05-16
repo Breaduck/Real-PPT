@@ -1,6 +1,7 @@
 "use client";
 
 import SlideFrame from "../SlideFrame";
+import EditableText from "../EditableText";
 import type { TwoColumnCompareSlide, PptDesignSystem } from "@/lib/types";
 
 interface Props {
@@ -14,17 +15,17 @@ export default function TwoColumnCompare({ slide, design }: Props) {
 
   return (
     <SlideFrame accentColor={slide.accentColor} design={design}>
-      {/* Vertical divider */}
       <div
         className="absolute top-0 left-1/2 -translate-x-1/2 h-full w-px"
         style={{ backgroundColor: `${design.colors.accent}40` }}
       />
 
       <div className="flex flex-col h-full">
-        {/* Optional title row */}
         {slide.title && (
           <div style={{ marginBottom: design.spacing.sectionGap, flexShrink: 0 }}>
-            <h2
+            <EditableText
+              id="title"
+              tag="h2"
               style={{
                 fontSize: design.typography.heading.fontSize,
                 fontWeight: design.typography.heading.fontWeight,
@@ -34,11 +35,10 @@ export default function TwoColumnCompare({ slide, design }: Props) {
               }}
             >
               {slide.title}
-            </h2>
+            </EditableText>
           </div>
         )}
 
-        {/* Two columns */}
         <div className="flex flex-1 gap-16">
           {/* Left */}
           <div className="flex-1 flex flex-col">
@@ -46,7 +46,9 @@ export default function TwoColumnCompare({ slide, design }: Props) {
               className="mb-4 pb-3 border-b"
               style={{ borderColor: `${design.colors.accent}50` }}
             >
-              <span
+              <EditableText
+                id="leftLabel"
+                tag="span"
                 style={{
                   fontSize: design.typography.subheading.fontSize,
                   fontWeight: 700,
@@ -55,12 +57,14 @@ export default function TwoColumnCompare({ slide, design }: Props) {
                 }}
               >
                 {slide.leftLabel}
-              </span>
+              </EditableText>
             </div>
             <div className="flex flex-col" style={{ gap: design.spacing.itemGap }}>
               {slide.leftItems.map((item, i) => (
-                <p
+                <EditableText
                   key={i}
+                  id={`left-${i}`}
+                  tag="p"
                   style={{
                     fontSize: design.typography.body.fontSize,
                     lineHeight: design.typography.body.lineHeight,
@@ -68,7 +72,7 @@ export default function TwoColumnCompare({ slide, design }: Props) {
                   }}
                 >
                   {item}
-                </p>
+                </EditableText>
               ))}
             </div>
           </div>
@@ -79,7 +83,9 @@ export default function TwoColumnCompare({ slide, design }: Props) {
               className="mb-4 pb-3 border-b"
               style={{ borderColor: `${design.colors.brandPrimary}50` }}
             >
-              <span
+              <EditableText
+                id="rightLabel"
+                tag="span"
                 style={{
                   fontSize: design.typography.subheading.fontSize,
                   fontWeight: 700,
@@ -88,12 +94,14 @@ export default function TwoColumnCompare({ slide, design }: Props) {
                 }}
               >
                 {slide.rightLabel}
-              </span>
+              </EditableText>
             </div>
             <div className="flex flex-col" style={{ gap: design.spacing.itemGap }}>
               {slide.rightItems.map((item, i) => (
-                <p
+                <EditableText
                   key={i}
+                  id={`right-${i}`}
+                  tag="p"
                   style={{
                     fontSize: design.typography.body.fontSize,
                     lineHeight: design.typography.body.lineHeight,
@@ -101,14 +109,13 @@ export default function TwoColumnCompare({ slide, design }: Props) {
                   }}
                 >
                   {item}
-                </p>
+                </EditableText>
               ))}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Compare type label bottom center */}
       <div
         className="absolute bottom-0 left-1/2 -translate-x-1/2 pb-6"
         style={{
