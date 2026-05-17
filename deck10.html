@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>SpaceX 운영 분석 · deck10</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#0a0a0a;
+  --charcoal:#2c2c2c;
+  --slate:#555;
+  --steel:#757575;
+  --stone:#a3a3a3;
+  --muted:#b8b8b8;
+  --canvas:#fff;
+  --surface:#f5f5f5;
+  --hairline:#e5e5e5;
+  --hairline-soft:#f0f0f0;
+  --coral:#ff5530;
+  --on-dark:#fff;
+}
+html,body{
+  background:var(--surface);
+  font-family:'Pretendard Variable','Pretendard','DM Sans','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh}
+.slide{
+  width:1280px;height:720px;background:var(--canvas);position:absolute;
+  display:none;overflow:hidden;
+}
+.slide.on{display:block}
+.slide, .slide *{
+  word-break:keep-all;
+  overflow-wrap:break-word;
+  line-break:strict;
+}
+
+#nav{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:var(--ink);border-radius:9999px;padding:10px 20px;z-index:99}
+#nav button{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:18px;font-family:inherit;padding:0 6px;font-weight:500}
+#nav button:hover{color:#fff}
+#nav button:disabled{opacity:.2;cursor:default}
+#ctr{font-size:13px;color:rgba(255,255,255,.6);min-width:46px;text-align:center;font-weight:500}
+
+@media print{
+  body{background:#fff}
+  #nav{display:none}
+  .slide{position:relative;display:block!important;width:100%;height:auto;aspect-ratio:16/9;page-break-after:always}
+}
+</style>
+</head>
+<body>
+
+
+<!-- ═══ SLIDE 11 · 재사용 = 손익분기 게임 ═══ -->
+<div class="slide on" style="display:block">
+  <div style="position:absolute;top:32px;left:64px;right:64px">
+    <p style="font-size:13px;font-weight:600;color:var(--steel);margin-bottom:14px;letter-spacing:.02em">제4장 <span style="font-weight:300;color:var(--stone)">·</span> 핵심 전략 ④</p>
+    <h2 style="font-size:52px;font-weight:700;color:var(--ink);letter-spacing:-2px;line-height:1.12;margin-bottom:12px">
+      재사용 <span style="font-weight:300;color:var(--stone)">=</span> 손익분기 게임
+    </h2>
+    <p style="font-size:18px;font-weight:400;color:var(--steel);line-height:1.5;letter-spacing:-.005em">
+      재사용은 환경 이슈가 아니라 단위 경제성 문제
+    </p>
+  </div>
+
+  <div style="position:absolute;left:64px;right:64px;top:204px;bottom:84px;display:grid;grid-template-rows:auto 1fr auto;gap:18px">
+
+    <!-- row 1: 거대 숫자 정면 대비 -->
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:32px;align-items:center;padding:6px 8px">
+
+      <!-- 좌 $160M -->
+      <div style="display:flex;flex-direction:column;align-items:flex-start">
+        <p style="font-size:11px;font-weight:700;color:var(--stone);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">아틀라스 V</p>
+        <p style="font-size:14px;font-weight:500;color:var(--steel);letter-spacing:-.005em;margin-bottom:10px">1회용 발사 단가</p>
+        <div style="font-size:124px;font-weight:800;color:var(--charcoal);letter-spacing:-5px;line-height:0.95;display:flex;align-items:flex-start">
+          $160<span style="font-size:54px;font-weight:700;margin-top:14px;letter-spacing:-2px">M</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:600;color:var(--charcoal);background:var(--surface);padding:5px 11px;border-radius:9999px">매번 신규 제작</span>
+          <span style="font-size:12px;font-weight:600;color:var(--charcoal);background:var(--surface);padding:5px 11px;border-radius:9999px">전체 폐기</span>
+        </div>
+      </div>
+
+      <!-- 가운데 vs + 차이 -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 4px">
+        <span style="font-size:28px;font-weight:400;color:var(--stone);letter-spacing:-1px;font-style:normal">vs</span>
+        <div style="width:1px;height:36px;background:var(--hairline)"></div>
+        <p style="font-size:10px;font-weight:700;color:var(--steel);letter-spacing:.1em;text-transform:uppercase">차이</p>
+        <p style="font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.8px;line-height:1">−58%</p>
+      </div>
+
+      <!-- 우 $67M (산호) -->
+      <div style="display:flex;flex-direction:column;align-items:flex-start">
+        <p style="font-size:11px;font-weight:700;color:var(--coral);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">팰컨 9</p>
+        <p style="font-size:14px;font-weight:500;color:var(--steel);letter-spacing:-.005em;margin-bottom:10px">재사용 발사 단가</p>
+        <div style="font-size:124px;font-weight:800;color:var(--coral);letter-spacing:-5px;line-height:0.95;display:flex;align-items:flex-start">
+          $67<span style="font-size:54px;font-weight:700;margin-top:14px;letter-spacing:-2px">M</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:600;color:var(--charcoal);background:var(--surface);padding:5px 11px;border-radius:9999px">1단 회수 후 재사용</span>
+          <span style="font-size:12px;font-weight:600;color:var(--charcoal);background:var(--surface);padding:5px 11px;border-radius:9999px">단일 부스터 최대 34회</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- row 2: 손익분기 차트 + 단계 분할 -->
+    <div style="display:grid;grid-template-columns:1.55fr 1fr;gap:24px;align-items:stretch">
+
+      <!-- 좌: 라인 차트 -->
+      <div style="padding:12px 4px 0;display:flex;flex-direction:column">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+          <p style="font-size:11px;font-weight:700;color:var(--steel);letter-spacing:.08em;text-transform:uppercase">부스터 1대 제작비 — 재사용 횟수로 분할 상각</p>
+          <p style="font-size:10px;font-weight:500;color:var(--muted);letter-spacing:.04em">단가 비율 (1회 = 100%)</p>
+        </div>
+
+        <svg viewBox="0 0 700 220" style="width:100%;flex:1" preserveAspectRatio="xMidYMid meet">
+          <!-- Grid -->
+          <line x1="50" y1="20" x2="670" y2="20" stroke="#f0f0f0" stroke-width="1" stroke-dasharray="3,3"/>
+          <line x1="50" y1="62" x2="670" y2="62" stroke="#f0f0f0" stroke-width="1" stroke-dasharray="3,3"/>
+          <line x1="50" y1="105" x2="670" y2="105" stroke="#f0f0f0" stroke-width="1" stroke-dasharray="3,3"/>
+          <line x1="50" y1="147" x2="670" y2="147" stroke="#f0f0f0" stroke-width="1" stroke-dasharray="3,3"/>
+          <line x1="50" y1="190" x2="670" y2="190" stroke="#e5e5e5" stroke-width="1"/>
+
+          <!-- Y axis labels -->
+          <text x="42" y="24" font-size="10" font-weight="500" fill="#a3a3a3" text-anchor="end">100%</text>
+          <text x="42" y="66" font-size="10" font-weight="500" fill="#a3a3a3" text-anchor="end">75</text>
+          <text x="42" y="109" font-size="10" font-weight="500" fill="#a3a3a3" text-anchor="end">50</text>
+          <text x="42" y="151" font-size="10" font-weight="500" fill="#a3a3a3" text-anchor="end">25</text>
+          <text x="42" y="194" font-size="10" font-weight="500" fill="#a3a3a3" text-anchor="end">0</text>
+
+          <!-- Area fill -->
+          <defs>
+            <linearGradient id="costGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ff5530" stop-opacity="0.28"/>
+              <stop offset="100%" stop-color="#ff5530" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <path d="M50,20 L69,105 88,134 125,156 163,166 219,173 313,179 407,182 501,183 595,184 670,185 L670,190 L50,190 Z" fill="url(#costGrad)"/>
+
+          <!-- Line -->
+          <polyline points="50,20 69,105 88,134 125,156 163,166 219,173 313,179 407,182 501,183 595,184 670,185"
+                    fill="none" stroke="#ff5530" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- Start point (1회 = 100%) -->
+          <circle cx="50" cy="20" r="5" fill="#fff" stroke="#2c2c2c" stroke-width="2"/>
+          <text x="50" y="11" font-size="10" font-weight="700" fill="#2c2c2c" text-anchor="start">1회 · 100%</text>
+
+          <!-- Strategic nodes -->
+          <circle cx="219" cy="173" r="5" fill="#fff" stroke="#ff5530" stroke-width="2"/>
+          <text x="219" y="164" font-size="11" font-weight="700" fill="#0a0a0a" text-anchor="middle">10%</text>
+
+          <circle cx="407" cy="182" r="5" fill="#fff" stroke="#ff5530" stroke-width="2"/>
+          <text x="407" y="173" font-size="11" font-weight="700" fill="#0a0a0a" text-anchor="middle">5%</text>
+
+          <circle cx="670" cy="185" r="7" fill="#ff5530" stroke="#fff" stroke-width="2.5"/>
+          <text x="660" y="178" font-size="13" font-weight="800" fill="#ff5530" text-anchor="end">3%</text>
+
+          <!-- X axis labels -->
+          <text x="50" y="207" font-size="11" font-weight="500" fill="#757575" text-anchor="middle">1회</text>
+          <text x="219" y="207" font-size="11" font-weight="600" fill="#0a0a0a" text-anchor="middle">10회</text>
+          <text x="407" y="207" font-size="11" font-weight="600" fill="#0a0a0a" text-anchor="middle">20회</text>
+          <text x="670" y="207" font-size="11" font-weight="800" fill="#0a0a0a" text-anchor="middle">34회</text>
+        </svg>
+      </div>
+
+      <!-- 우: 3 단계 분할 -->
+      <div style="display:flex;flex-direction:column;justify-content:center;gap:10px;padding-left:8px;border-left:1px solid var(--hairline-soft)">
+        <div style="padding-left:18px">
+          <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:3px">
+            <span style="font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.5px">10회</span>
+            <span style="font-size:11px;font-weight:600;color:var(--steel);letter-spacing:.04em">재사용</span>
+          </div>
+          <p style="font-size:13.5px;font-weight:500;color:var(--charcoal);line-height:1.45;letter-spacing:-.005em">단가 <span style="font-weight:700;color:var(--ink)">1/10</span></p>
+        </div>
+        <div style="padding-left:18px;padding-top:10px;border-top:1px solid var(--hairline-soft)">
+          <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:3px">
+            <span style="font-size:18px;font-weight:800;color:var(--ink);letter-spacing:-.5px">20회</span>
+            <span style="font-size:11px;font-weight:600;color:var(--steel);letter-spacing:.04em">재사용</span>
+          </div>
+          <p style="font-size:13.5px;font-weight:500;color:var(--charcoal);line-height:1.45;letter-spacing:-.005em">단가 <span style="font-weight:700;color:var(--ink)">1/20</span></p>
+        </div>
+        <div style="padding-left:18px;padding-top:10px;border-top:1px solid var(--hairline-soft)">
+          <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:3px">
+            <span style="font-size:18px;font-weight:800;color:var(--coral);letter-spacing:-.5px">34회</span>
+            <span style="font-size:11px;font-weight:600;color:var(--coral);letter-spacing:.04em">최다 재사용</span>
+          </div>
+          <p style="font-size:13.5px;font-weight:500;color:var(--charcoal);line-height:1.45;letter-spacing:-.005em">규모의 경제 + 학습 효과 결합</p>
+        </div>
+        <p style="font-size:12px;font-weight:500;color:var(--steel);line-height:1.5;letter-spacing:-.005em;padding-left:18px;margin-top:8px">
+          → 발사를 많이 할수록 <span style="font-weight:700;color:var(--ink)">단가가 더 떨어지는 구조</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- row 3: 마무리 한 줄 — 박스 없음 -->
+    <p style="text-align:center;font-size:17px;font-weight:500;color:var(--charcoal);letter-spacing:-.005em;line-height:1.4;padding-top:4px">
+      재사용은 환경 이슈가 아니라 <span style="font-weight:800;color:var(--ink);border-bottom:2px solid var(--coral);padding-bottom:2px">단위 경제성(Unit Economics)</span> 문제다
+    </p>
+  </div>
+
+  <p style="position:absolute;bottom:24px;right:32px;font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.06em">11</p>
+</div>
+
+
+<!-- ═══ SLIDE 12 · 디지털 트윈 + AI 공급망 ═══ -->
+<div class="slide">
+  <div style="position:absolute;top:32px;left:64px;right:64px">
+    <p style="font-size:13px;font-weight:600;color:var(--steel);margin-bottom:14px;letter-spacing:.02em">제4장 <span style="font-weight:300;color:var(--stone)">·</span> 핵심 전략 ⑤</p>
+    <h2 style="font-size:52px;font-weight:700;color:var(--ink);letter-spacing:-2px;line-height:1.12;margin-bottom:12px">
+      디지털 트윈 <span style="font-weight:300;color:var(--stone)">+</span> AI 공급망
+    </h2>
+    <p style="font-size:18px;font-weight:400;color:var(--steel);line-height:1.5;letter-spacing:-.005em">
+      가상에서 먼저, 현장에서 나중에
+    </p>
+  </div>
+
+  <div style="position:absolute;left:64px;right:64px;top:204px;bottom:84px;display:grid;grid-template-rows:1fr auto;gap:14px">
+
+    <!-- 2x2 사분면 (가운데 십자가 구분선) -->
+    <div style="background:var(--canvas);border:1px solid var(--hairline);border-radius:20px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;overflow:hidden">
+
+      <!-- Q1 · 디지털 트윈 (좌상) -->
+      <div style="padding:24px 28px;border-right:1px solid var(--hairline-soft);border-bottom:1px solid var(--hairline-soft);display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+          <svg width="36" height="36" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="16" fill="none" stroke="#0a0a0a" stroke-width="1.5"/>
+            <path d="M 18 2 A 16 16 0 0 0 18 34 Z" fill="#0a0a0a"/>
+          </svg>
+          <div>
+            <p style="font-size:10px;font-weight:700;color:var(--stone);letter-spacing:.1em;text-transform:uppercase">A</p>
+            <h3 style="font-size:20px;font-weight:800;color:var(--ink);letter-spacing:-.6px;line-height:1.2">디지털 트윈</h3>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;flex:1">
+          <div style="display:grid;grid-template-columns:6px 1fr;gap:11px;align-items:start">
+            <span style="width:4px;height:4px;background:var(--stone);border-radius:50%;margin-top:8px"></span>
+            <p style="font-size:13.5px;font-weight:500;color:var(--charcoal);line-height:1.5;letter-spacing:-.005em">실제 공장과 동일한 <span style="font-weight:700;color:var(--ink)">가상 공장</span> 구축</p>
+          </div>
+          <div style="display:grid;grid-template-columns:6px 1fr;gap:11px;align-items:start">
+            <span style="width:4px;height:4px;background:var(--stone);border-radius:50%;margin-top:8px"></span>
+            <p style="font-size:13.5px;font-weight:500;color:var(--charcoal);line-height:1.5;letter-spacing:-.005em">가공·조립을 가상에서 먼저 시뮬</p>
+          </div>
+          <div style="display:grid;grid-template-columns:6px 1fr;gap:11px;align-items:start">
+            <span style="width:4px;height:4px;background:var(--stone);border-radius:50%;margin-top:8px"></span>
+            <p style="font-size:13.5px;font-weight:500;color:var(--charcoal);line-height:1.5;letter-spacing:-.005em">충돌·간섭·오차를 사전 발견</p>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--hairline-soft)">
+          <span style="font-size:14px;font-weight:700;color:var(--ink)">→</span>
+          <p style="font-size:13.5px;font-weight:700;color:var(--ink);letter-spacing:-.005em">현장 폐기율 감소</p>
+        </div>
+      </div>
+
+      <!-- Q2 · AI 공급망 (우상) -->
+      <div style="padding:24px 28px;border-bottom:1px solid var(--hairline-soft);display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+          <svg width="36" height="36" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="16" fill="none" stroke="#0a0a0a" stroke-width="1.5"/>
+            <path d="M 18 2 A 16 16 0 0 1 34 18 L 18 18 Z" fill="#0a0a0a"/>
+          </svg>
+          <div>
+            <p style="font-size:10px;font-weight:700;color:var(--stone);letter-spacing:.1em;text-transform:uppercase">B</p>
+            <h3 style="font-size:20px;font-weight:800;color:var(--ink);letter-spacing:-.6px;line-height:1.2">AI 공급망</h3>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;flex:1">
+          <div style="display:grid;grid-template-columns:6px 1fr;gap:11px;align-items:start">
+            <span style="width:4px;height:4px;background:var(--stone);border-radius:50%;margin-top:8px"></span>
+            <p style="font-size:13.5px;font-weight:500;color:var(--charcoal);line-height:1.5;letter-spacing:-.005em">부품 재고 <span style="font-weight:700;color:var(--ink)">실시간 모니터링</span></p>
+          </div>
+          <div style="display:grid;grid-template-columns:6px 1fr;gap:11px;align-items:start">
+            <span style="width:4px;height:4px;background:var(--stone);border-radius:50%;margin-top:8px"></span>
+            <p style="font-size:13.5px;font-weight:500;color:var(--charcoal);line-height:1.5;letter-spacing:-.005em">소진 조짐 감지 시 자동 발주</p>
+          </div>
+          <div style="display:grid;grid-template-columns:6px 1fr;gap:11px;align-items:start">
+            <span style="width:4px;height:4px;background:var(--stone);border-radius:50%;margin-top:8px"></span>
+            <p style="font-size:13.5px;font-weight:500;color:var(--charcoal);line-height:1.5;letter-spacing:-.005em">지정학 리스크 감지 → <span style="font-weight:700;color:var(--ink)">대체 공급선 자동 탐색</span></p>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--hairline-soft)">
+          <span style="font-size:14px;font-weight:700;color:var(--ink)">→</span>
+          <p style="font-size:13.5px;font-weight:700;color:var(--ink);letter-spacing:-.005em">공급망 끊김 방어</p>
+        </div>
+      </div>
+
+      <!-- Q3 · 운영 효과 (좌하) -->
+      <div style="padding:24px 28px;border-right:1px solid var(--hairline-soft);display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+          <svg width="36" height="36" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="16" fill="none" stroke="#0a0a0a" stroke-width="1.5"/>
+            <path d="M 18 2 A 16 16 0 0 1 18 34 Z" fill="#0a0a0a"/>
+          </svg>
+          <div>
+            <p style="font-size:10px;font-weight:700;color:var(--stone);letter-spacing:.1em;text-transform:uppercase">C</p>
+            <h3 style="font-size:20px;font-weight:800;color:var(--ink);letter-spacing:-.6px;line-height:1.2">운영 효과</h3>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px;flex:1">
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:baseline;padding:5px 0">
+            <span style="font-size:10px;font-weight:800;color:var(--steel);letter-spacing:.04em;text-transform:uppercase">내적</span>
+            <p style="font-size:13.5px;font-weight:500;color:var(--charcoal);line-height:1.45;letter-spacing:-.005em">실패 비용 <span style="color:var(--steel);font-weight:400">(불량·재작업)</span> 감소</p>
+          </div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--hairline-soft)">
+            <span style="font-size:10px;font-weight:800;color:var(--steel);letter-spacing:.04em;text-transform:uppercase">외적</span>
+            <p style="font-size:13.5px;font-weight:500;color:var(--charcoal);line-height:1.45;letter-spacing:-.005em">실패 비용 <span style="color:var(--steel);font-weight:400">(납품 지연·고객 손실)</span> 감소</p>
+          </div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:baseline;padding:5px 0;border-top:1px solid var(--hairline-soft)">
+            <span style="font-size:10px;font-weight:800;color:var(--steel);letter-spacing:.04em;text-transform:uppercase">가동</span>
+            <p style="font-size:13.5px;font-weight:500;color:var(--charcoal);line-height:1.45;letter-spacing:-.005em">공장 <span style="font-weight:700;color:var(--ink)">무중단 가동률</span> 향상</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Q4 · 연결 개념 (우하) -->
+      <div style="padding:24px 28px;display:flex;flex-direction:column">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+          <svg width="36" height="36" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="16" fill="none" stroke="#0a0a0a" stroke-width="1.5"/>
+            <path d="M 18 2 A 16 16 0 1 1 2 18 L 18 18 Z" fill="#0a0a0a"/>
+          </svg>
+          <div>
+            <p style="font-size:10px;font-weight:700;color:var(--stone);letter-spacing:.1em;text-transform:uppercase">D</p>
+            <h3 style="font-size:20px;font-weight:800;color:var(--ink);letter-spacing:-.6px;line-height:1.2">연결 개념</h3>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:10px;flex:1">
+          <p style="font-size:13.5px;font-weight:600;color:var(--ink);letter-spacing:-.005em">품질 비용(COQ) 모델</p>
+
+          <!-- COQ 트레이드오프 미니 시각화 -->
+          <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;padding:8px 10px;background:var(--surface);border-radius:10px">
+            <div>
+              <p style="font-size:10px;font-weight:700;color:var(--steel);letter-spacing:.06em;text-transform:uppercase">예방 비용</p>
+              <div style="display:flex;align-items:flex-end;gap:2px;height:22px;margin-top:4px">
+                <span style="width:8px;height:18px;background:var(--ink);border-radius:1px"></span>
+                <span style="width:8px;height:13px;background:var(--ink);border-radius:1px"></span>
+                <span style="width:8px;height:8px;background:var(--charcoal);border-radius:1px"></span>
+                <span style="width:8px;height:5px;background:var(--stone);border-radius:1px"></span>
+              </div>
+            </div>
+            <span style="font-size:14px;font-weight:600;color:var(--stone)">⇄</span>
+            <div>
+              <p style="font-size:10px;font-weight:700;color:var(--steel);letter-spacing:.06em;text-transform:uppercase">실패 비용</p>
+              <div style="display:flex;align-items:flex-end;gap:2px;height:22px;margin-top:4px">
+                <span style="width:8px;height:5px;background:var(--stone);border-radius:1px"></span>
+                <span style="width:8px;height:9px;background:var(--charcoal);border-radius:1px"></span>
+                <span style="width:8px;height:14px;background:var(--ink);border-radius:1px"></span>
+                <span style="width:8px;height:20px;background:var(--ink);border-radius:1px"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--hairline-soft)">
+          <span style="font-size:14px;font-weight:700;color:var(--ink)">→</span>
+          <p style="font-size:13.5px;font-weight:700;color:var(--ink);letter-spacing:-.005em">예방에 투자할수록 실패 비용 감소</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 하단 마무리 — 다크박스 없이 가벼운 ribbon -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:14px;padding:14px 24px">
+      <span style="width:36px;height:1px;background:var(--hairline)"></span>
+      <p style="font-size:16px;font-weight:500;color:var(--charcoal);letter-spacing:-.005em;text-align:center">
+        가상에서 폐기율을 잡고, AI로 공급망 끊김을 막는다 <span style="color:var(--stone);font-weight:300">—</span> <span style="font-weight:800;color:var(--ink)">두 시스템의 결합</span>
+      </p>
+      <span style="width:36px;height:1px;background:var(--hairline)"></span>
+    </div>
+  </div>
+
+  <p style="position:absolute;bottom:24px;right:32px;font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.06em">12</p>
+</div>
+
+
+<!-- NAV -->
+<div id="nav">
+  <button id="bp" onclick="go(-1)" disabled>‹</button>
+  <span id="ctr">1 / 2</span>
+  <button id="bn" onclick="go(1)">›</button>
+</div>
+
+<script>
+const ss=document.querySelectorAll('.slide'),N=ss.length;let c=0;
+function show(n){ss[c].classList.remove('on');c=Math.max(0,Math.min(N-1,n));ss[c].classList.add('on');document.getElementById('ctr').textContent=(c+1)+' / '+N;document.getElementById('bp').disabled=c===0;document.getElementById('bn').disabled=c===N-1;}
+function go(d){show(c+d);}
+document.addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' '].includes(e.key)){e.preventDefault();go(1);}if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();go(-1);}});
+</script>
+</body>
+</html>
