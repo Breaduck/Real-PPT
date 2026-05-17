@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>SpaceX 운영 분석 · deck9</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#0a0a0a;
+  --charcoal:#2c2c2c;
+  --slate:#555;
+  --steel:#757575;
+  --stone:#a3a3a3;
+  --muted:#b8b8b8;
+  --canvas:#fff;
+  --surface:#f5f5f5;
+  --hairline:#e5e5e5;
+  --hairline-soft:#f0f0f0;
+  --coral:#ff5530;
+  --on-dark:#fff;
+}
+html,body{
+  background:var(--surface);
+  font-family:'Pretendard Variable','Pretendard','DM Sans','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh}
+.slide{
+  width:1280px;height:720px;background:var(--canvas);position:absolute;
+  display:none;overflow:hidden;
+}
+.slide.on{display:block}
+.slide, .slide *{
+  word-break:keep-all;
+  overflow-wrap:break-word;
+  line-break:strict;
+}
+
+#nav{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:10px;background:var(--ink);border-radius:9999px;padding:10px 20px;z-index:99}
+#nav button{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:18px;font-family:inherit;padding:0 6px;font-weight:500}
+#nav button:hover{color:#fff}
+#nav button:disabled{opacity:.2;cursor:default}
+#ctr{font-size:13px;color:rgba(255,255,255,.6);min-width:46px;text-align:center;font-weight:500}
+
+@media print{
+  body{background:#fff}
+  #nav{display:none}
+  .slide{position:relative;display:block!important;width:100%;height:auto;aspect-ratio:16/9;page-break-after:always}
+}
+</style>
+</head>
+<body>
+
+
+<!-- ═══ SLIDE 1 · 커버 (deck7 그대로) ═══ -->
+<div class="slide on" style="display:block">
+  <div style="position:absolute;top:40px;left:64px;right:64px;display:flex;justify-content:space-between;align-items:center">
+    <p style="font-size:14px;font-weight:600;color:var(--ink);letter-spacing:-.01em">Operations Management</p>
+    <span style="font-size:12px;font-weight:700;color:var(--on-dark);background:var(--coral);padding:5px 14px;border-radius:9999px;letter-spacing:.04em">CASE STUDY</span>
+  </div>
+
+  <div style="position:absolute;left:64px;right:64px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center">
+    <p style="font-size:15px;font-weight:400;color:var(--steel);margin-bottom:28px;letter-spacing:-.005em">우주 발사체 2대장의 비교 분석</p>
+    <h1 style="font-size:104px;font-weight:800;line-height:1.02;letter-spacing:-4px;color:var(--ink);margin-bottom:36px;max-width:1080px">
+      누리호가<br>나아가야 할 <span style="font-weight:300;color:var(--charcoal)">길.</span>
+    </h1>
+    <p style="font-size:21px;font-weight:400;color:var(--charcoal);line-height:1.5;max-width:780px;letter-spacing:-.01em">
+      스페이스X의 운영 방식을 통해 들여다보는 — 우주 발사 산업의 <span style="font-weight:600;color:var(--ink)">새로운 경쟁 기준.</span>
+    </p>
+  </div>
+
+  <div style="position:absolute;bottom:48px;left:64px;right:64px;display:flex;justify-content:space-between;align-items:flex-end">
+    <div style="display:flex;gap:48px">
+      <div>
+        <p style="font-size:11px;font-weight:500;color:var(--stone);margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase">과목</p>
+        <p style="font-size:14px;font-weight:600;color:var(--ink);letter-spacing:-.005em">Operations Management</p>
+      </div>
+      <div>
+        <p style="font-size:11px;font-weight:500;color:var(--stone);margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase">제출일</p>
+        <p style="font-size:14px;font-weight:600;color:var(--ink);letter-spacing:-.005em">2025</p>
+      </div>
+      <div>
+        <p style="font-size:11px;font-weight:500;color:var(--stone);margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase">사례 기업</p>
+        <p style="font-size:14px;font-weight:600;color:var(--ink);letter-spacing:-.005em">SpaceX <span style="font-weight:300;color:var(--stone)">·</span> 블루 오리진</p>
+      </div>
+    </div>
+    <p style="font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.06em">01</p>
+  </div>
+</div>
+
+
+<!-- ═══ SLIDE 2 · 왜 이 기업인가 ═══ -->
+<div class="slide">
+  <div style="position:absolute;top:32px;left:64px;right:64px">
+    <p style="font-size:13px;font-weight:600;color:var(--steel);margin-bottom:14px;letter-spacing:.02em">제1장 <span style="font-weight:300;color:var(--stone)">·</span> 사례 기업 소개</p>
+    <h2 style="font-size:54px;font-weight:700;color:var(--ink);letter-spacing:-2px;line-height:1.12;margin-bottom:12px">
+      왜 이 기업<span style="font-weight:300;color:var(--stone)">인가</span>
+    </h2>
+    <p style="font-size:19px;font-weight:400;color:var(--steel);line-height:1.5;letter-spacing:-.005em">
+      국가가 쏘아 올리던 로켓을 — <span style="font-weight:600;color:var(--charcoal)">민간이 공장에서 찍어내기</span> 시작한 시점.
+    </p>
+  </div>
+
+  <div style="position:absolute;left:64px;right:64px;top:204px;bottom:84px;display:grid;grid-template-columns:1.1fr 1fr;gap:16px">
+
+    <!-- 좌: 회사 프로파일 카드 -->
+    <div style="background:var(--canvas);border:1px solid var(--hairline);border-radius:20px;padding:32px;display:flex;flex-direction:column;justify-content:space-between">
+      <div>
+        <p style="font-size:11px;font-weight:600;color:var(--steel);letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px">Subject Company</p>
+        <h3 style="font-size:64px;font-weight:800;color:var(--ink);letter-spacing:-2.5px;line-height:1;margin-bottom:10px">SpaceX</h3>
+        <p style="font-size:14px;font-weight:500;color:var(--stone);letter-spacing:-.005em;margin-bottom:6px">Space Exploration Technologies Corp.</p>
+        <p style="font-size:17px;font-weight:500;color:var(--charcoal);letter-spacing:-.005em">미국 상업용 우주 발사 기업</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;margin-top:20px">
+        <div style="padding:14px 0;border-top:1px solid var(--hairline-soft);display:grid;grid-template-columns:110px 1fr;gap:18px;align-items:baseline">
+          <span style="font-size:11px;font-weight:600;color:var(--steel);letter-spacing:.06em;text-transform:uppercase">산업 분야</span>
+          <span style="font-size:14px;font-weight:500;color:var(--charcoal);line-height:1.55;letter-spacing:-.005em">상업용 우주 운송 — 위성·화물·인력을 궤도까지 <span style="font-weight:700;color:var(--ink)">'배송'</span>하는 서비스업</span>
+        </div>
+        <div style="padding:14px 0;border-top:1px solid var(--hairline-soft);display:grid;grid-template-columns:110px 1fr;gap:18px;align-items:baseline">
+          <span style="font-size:11px;font-weight:600;color:var(--steel);letter-spacing:.06em;text-transform:uppercase">주요 제품</span>
+          <span style="font-size:14px;font-weight:500;color:var(--charcoal);line-height:1.55;letter-spacing:-.005em"><span style="font-weight:700;color:var(--ink)">팰컨 9</span> 발사체 <span style="color:var(--stone);font-weight:300">·</span> <span style="font-weight:700;color:var(--ink)">스타링크</span> 위성 인터넷 <span style="color:var(--stone);font-weight:300">·</span> <span style="font-weight:700;color:var(--ink)">드래건</span> ISS 수송</span>
+        </div>
+        <div style="padding:14px 0;border-top:1px solid var(--hairline-soft);display:grid;grid-template-columns:110px 1fr;gap:18px;align-items:baseline">
+          <span style="font-size:11px;font-weight:600;color:var(--steel);letter-spacing:.06em;text-transform:uppercase">주요 고객</span>
+          <span style="font-size:14px;font-weight:500;color:var(--charcoal);line-height:1.55;letter-spacing:-.005em">NASA <span style="color:var(--stone);font-weight:300">·</span> 미 국방부 <span style="color:var(--stone);font-weight:300">·</span> 통신사 <span style="color:var(--stone);font-weight:300">·</span> 위성 운영사 <span style="color:var(--stone);font-weight:300">·</span> 스타링크 일반 소비자</span>
+        </div>
+        <div style="padding:14px 0;border-top:1px solid var(--hairline-soft);border-bottom:1px solid var(--hairline-soft);display:grid;grid-template-columns:110px 1fr;gap:18px;align-items:baseline">
+          <span style="font-size:11px;font-weight:600;color:var(--steel);letter-spacing:.06em;text-transform:uppercase">운영 특징</span>
+          <span style="font-size:14px;font-weight:500;color:var(--charcoal);line-height:1.55;letter-spacing:-.005em">초저가 + 초고빈도 — 부품 자체 생산과 로켓 재사용으로 <span style="font-weight:700;color:var(--ink)">단가 경쟁사 절반 이하</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 우: 두 카드 세로 -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- 우상: 패러다임 이동 -->
+      <div style="background:var(--canvas);border:1px solid var(--hairline);border-radius:20px;padding:28px;flex:1.05;display:flex;flex-direction:column">
+        <p style="font-size:11px;font-weight:600;color:var(--steel);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">Paradigm Shift</p>
+        <h3 style="font-size:24px;font-weight:700;color:var(--ink);letter-spacing:-.8px;line-height:1.25;margin-bottom:22px">
+          국가의 손에서 <span style="font-weight:300;color:var(--stone)">→</span> 시장의 손으로
+        </h3>
+
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch;flex:1">
+          <div style="background:var(--surface);border-radius:12px;padding:18px 16px;display:flex;flex-direction:column;justify-content:space-between">
+            <p style="font-size:10px;font-weight:700;color:var(--stone);letter-spacing:.08em;text-transform:uppercase">Past</p>
+            <div>
+              <p style="font-size:15px;font-weight:700;color:var(--charcoal);line-height:1.35;letter-spacing:-.01em;margin-bottom:6px">국가 주도 우주 탐사</p>
+              <p style="font-size:12px;font-weight:400;color:var(--steel);line-height:1.45;letter-spacing:-.005em">NASA · 러시아 연방우주공사</p>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:300;color:var(--stone)">→</div>
+
+          <div style="background:var(--ink);color:var(--on-dark);border-radius:12px;padding:18px 16px;display:flex;flex-direction:column;justify-content:space-between">
+            <p style="font-size:10px;font-weight:700;color:var(--coral);letter-spacing:.08em;text-transform:uppercase">Now</p>
+            <div>
+              <p style="font-size:15px;font-weight:700;color:#fff;line-height:1.35;letter-spacing:-.01em;margin-bottom:6px">상업용 우주 운송</p>
+              <p style="font-size:12px;font-weight:400;color:rgba(255,255,255,.7);line-height:1.45;letter-spacing:-.005em">위성·화물·인력을 궤도까지 '배송'</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 우하: 다크 박스 선정 이유 -->
+      <div style="background:var(--ink);color:var(--on-dark);border-radius:20px;padding:28px;flex:1;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-80px;right:-80px;width:200px;height:200px;border-radius:50%;background:rgba(255,85,48,.12)"></div>
+
+        <div style="position:relative;display:flex;align-items:center;gap:10px">
+          <span style="width:6px;height:6px;background:var(--coral);border-radius:50%"></span>
+          <p style="font-size:11px;font-weight:700;color:var(--coral);letter-spacing:.08em;text-transform:uppercase">선정 이유</p>
+        </div>
+
+        <p style="position:relative;font-size:14.5px;font-weight:400;color:rgba(255,255,255,.92);line-height:1.65;letter-spacing:-.005em;margin-top:8px">
+          "로켓은 한 대씩 정성껏 만드는 것"이라는 <span style="font-weight:700;color:#fff">70년간의 상식</span>을 깨고, 자동차처럼 <span style="font-weight:700;color:var(--coral)">공장에서 찍어내는 방식</span>으로 바꾼 사례. 생산관리 수업에서 배운 대량생산·재고관리·공정 표준화가 <span style="font-weight:700;color:#fff">가장 극단적으로 적용된 현장.</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <p style="position:absolute;bottom:24px;right:32px;font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.06em">02</p>
+</div>
+
+
+<!-- ═══ SLIDE 3 · 충격적인 숫자 3가지 ═══ -->
+<div class="slide">
+  <div style="position:absolute;top:32px;left:64px;right:64px">
+    <p style="font-size:13px;font-weight:600;color:var(--steel);margin-bottom:14px;letter-spacing:.02em">제1장 <span style="font-weight:300;color:var(--stone)">·</span> 사례 기업 소개</p>
+    <h2 style="font-size:54px;font-weight:700;color:var(--ink);letter-spacing:-2px;line-height:1.12;margin-bottom:12px">
+      먼저, <span style="color:var(--coral)">충격적인</span> 숫자 셋
+    </h2>
+    <p style="font-size:19px;font-weight:400;color:var(--steel);line-height:1.5;letter-spacing:-.005em">
+      본격 분석에 들어가기 전 — <span style="font-weight:600;color:var(--charcoal)">운영 시스템의 결과</span>부터 본다.
+    </p>
+  </div>
+
+  <div style="position:absolute;left:64px;right:64px;top:204px;bottom:84px;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr auto;gap:16px">
+
+    <!-- 카드 1 · coral product card -->
+    <div style="background:var(--coral);color:var(--on-dark);border-radius:28px;padding:28px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-90px;right:-90px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.1)"></div>
+      <div style="position:absolute;bottom:-70px;left:-70px;width:170px;height:170px;border-radius:50%;background:rgba(0,0,0,.06)"></div>
+
+      <div style="position:relative;display:flex;justify-content:space-between;align-items:flex-start">
+        <span style="font-size:11px;font-weight:700;background:rgba(255,255,255,.2);padding:5px 12px;border-radius:9999px;letter-spacing:.06em">FREQUENCY</span>
+        <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.75);letter-spacing:.04em">01</span>
+      </div>
+
+      <div style="position:relative">
+        <div style="display:flex;align-items:flex-end;gap:6px;line-height:1;margin-bottom:14px">
+          <span style="font-size:104px;font-weight:800;letter-spacing:-4px">2.2</span>
+          <span style="font-size:24px;font-weight:600;color:rgba(255,255,255,.85);margin-bottom:14px">일에 1회</span>
+        </div>
+
+        <!-- 미니 visualization: 점진 dots 표현 (365일 분포) -->
+        <div style="display:flex;gap:2.5px;margin-bottom:14px;flex-wrap:wrap;max-width:280px">
+          <span style="width:14px;height:4px;background:#fff;border-radius:2px"></span>
+          <span style="width:14px;height:4px;background:#fff;border-radius:2px"></span>
+          <span style="width:14px;height:4px;background:#fff;border-radius:2px"></span>
+          <span style="width:14px;height:4px;background:#fff;border-radius:2px"></span>
+          <span style="width:14px;height:4px;background:#fff;border-radius:2px"></span>
+          <span style="width:14px;height:4px;background:#fff;border-radius:2px"></span>
+          <span style="width:14px;height:4px;background:#fff;border-radius:2px"></span>
+          <span style="width:14px;height:4px;background:#fff;border-radius:2px"></span>
+          <span style="width:14px;height:4px;background:#fff;border-radius:2px"></span>
+          <span style="width:14px;height:4px;background:#fff;border-radius:2px"></span>
+          <span style="width:14px;height:4px;background:#fff;border-radius:2px"></span>
+          <span style="width:14px;height:4px;background:rgba(255,255,255,.4);border-radius:2px"></span>
+        </div>
+
+        <p style="font-size:14px;font-weight:500;color:rgba(255,255,255,.95);line-height:1.55;letter-spacing:-.005em">
+          <span style="font-weight:700;color:#fff">2025년 165회 발사</span> — 전 세계 모든 궤도 발사의 약 <span style="font-weight:700;color:#fff">85%</span>를 단독 수행했다.
+        </p>
+      </div>
+    </div>
+
+    <!-- 카드 2 · white card · 도넛 시각화 -->
+    <div style="background:var(--canvas);border:1px solid var(--hairline);border-radius:20px;padding:28px;display:flex;flex-direction:column;justify-content:space-between">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <p style="font-size:11px;font-weight:700;color:var(--steel);letter-spacing:.06em;text-transform:uppercase">Reliability</p>
+        <span style="font-size:11px;font-weight:600;color:var(--stone);letter-spacing:.04em">02</span>
+      </div>
+
+      <div>
+        <div style="display:flex;align-items:flex-end;gap:8px;line-height:1;margin-bottom:18px">
+          <span style="font-size:96px;font-weight:800;color:var(--ink);letter-spacing:-3.5px">99.8</span>
+          <span style="font-size:32px;font-weight:700;color:var(--coral);margin-bottom:10px">%</span>
+        </div>
+
+        <!-- 도넛 미니 -->
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+          <svg width="56" height="56" viewBox="0 0 56 56">
+            <circle cx="28" cy="28" r="22" fill="none" stroke="#f0f0f0" stroke-width="6"/>
+            <circle cx="28" cy="28" r="22" fill="none" stroke="#0a0a0a" stroke-width="6"
+                    stroke-dasharray="138.16" stroke-dashoffset="0.28"
+                    transform="rotate(-90 28 28)" stroke-linecap="round"/>
+          </svg>
+          <div>
+            <p style="font-size:13px;font-weight:700;color:var(--ink);letter-spacing:-.01em;line-height:1.3">442회 중 441회 성공</p>
+            <p style="font-size:11px;font-weight:500;color:var(--steel);margin-top:3px">팰컨 9 Block 5</p>
+          </div>
+        </div>
+
+        <p style="font-size:14px;font-weight:500;color:var(--charcoal);line-height:1.55;letter-spacing:-.005em">
+          <span style="font-weight:700;color:var(--ink)">항공기 수준의 신뢰성</span> — 로켓이 더 이상 '한 발 한 발의 도박'이 아니다.
+        </p>
+      </div>
+    </div>
+
+    <!-- 카드 3 · white card · 점진 막대 시각화 -->
+    <div style="background:var(--canvas);border:1px solid var(--hairline);border-radius:20px;padding:28px;display:flex;flex-direction:column;justify-content:space-between">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <p style="font-size:11px;font-weight:700;color:var(--steel);letter-spacing:.06em;text-transform:uppercase">Reuse</p>
+        <span style="font-size:11px;font-weight:600;color:var(--stone);letter-spacing:.04em">03</span>
+      </div>
+
+      <div>
+        <div style="display:flex;align-items:flex-end;gap:8px;line-height:1;margin-bottom:18px">
+          <span style="font-size:96px;font-weight:800;color:var(--ink);letter-spacing:-3.5px">34</span>
+          <span style="font-size:28px;font-weight:600;color:var(--charcoal);margin-bottom:10px">회</span>
+        </div>
+
+        <!-- 34 점진 dots -->
+        <div style="display:grid;grid-template-columns:repeat(17,1fr);gap:3px;margin-bottom:16px">
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--coral);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+          <span style="height:6px;background:var(--ink);border-radius:1px"></span>
+        </div>
+
+        <p style="font-size:14px;font-weight:500;color:var(--charcoal);line-height:1.55;letter-spacing:-.005em">
+          단일 부스터 <span style="font-weight:700;color:var(--ink)">B1067</span> 최다 재사용 — '한 번 쓰고 버리던 것'을 <span style="font-weight:700;color:var(--coral)">34번 다시 썼다.</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- 하단 다크 박스 wide -->
+    <div style="grid-column:span 3;background:var(--ink);color:var(--on-dark);border-radius:16px;padding:22px 30px;display:flex;align-items:center;justify-content:space-between;gap:24px">
+      <div style="display:flex;align-items:center;gap:18px">
+        <span style="width:6px;height:24px;background:var(--coral);border-radius:3px"></span>
+        <p style="font-size:17px;font-weight:500;color:#fff;letter-spacing:-.01em;line-height:1.4">
+          이 세 숫자는 우연이 아니라 — <span style="font-weight:700;color:var(--coral)">운영 시스템 설계</span>의 결과물이다.
+        </p>
+      </div>
+      <p style="font-size:11px;font-weight:500;color:rgba(255,255,255,.55);letter-spacing:.04em;text-align:right;line-height:1.5">SOURCE<br>SpaceflightNow 2025 · FAA</p>
+    </div>
+  </div>
+
+  <p style="position:absolute;bottom:24px;right:32px;font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.06em">03</p>
+</div>
+
+
+<!-- ═══ SLIDE 4 · 그런데 어떻게 이게 가능한가 ═══ -->
+<div class="slide">
+  <div style="position:absolute;top:32px;left:64px;right:64px">
+    <p style="font-size:13px;font-weight:600;color:var(--steel);margin-bottom:14px;letter-spacing:.02em">제1장 <span style="font-weight:300;color:var(--stone)">·</span> 의문 제기</p>
+    <h2 style="font-size:54px;font-weight:700;color:var(--ink);letter-spacing:-2px;line-height:1.12;margin-bottom:12px">
+      그런데 어떻게 <span style="color:var(--coral)">이게 가능한가?</span>
+    </h2>
+    <p style="font-size:19px;font-weight:400;color:var(--steel);line-height:1.5;letter-spacing:-.005em">
+      70년간의 우주 산업 공식과는 정반대 — <span style="font-weight:600;color:var(--charcoal)">무엇이 다른가.</span>
+    </p>
+  </div>
+
+  <div style="position:absolute;left:64px;right:64px;top:204px;bottom:84px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr auto;gap:16px">
+
+    <!-- 좌: 일반 로켓 -->
+    <div style="background:var(--canvas);border:1px solid var(--hairline);border-radius:20px;padding:28px;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div>
+          <p style="font-size:11px;font-weight:700;color:var(--steel);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">General Rocket · 기존 공식</p>
+          <h3 style="font-size:28px;font-weight:700;color:var(--ink);letter-spacing:-1px;line-height:1.2">12~24개월에 <span style="font-weight:300;color:var(--stone)">한 대</span></h3>
+        </div>
+        <span style="font-size:11px;font-weight:600;color:var(--charcoal);background:var(--surface);padding:5px 12px;border-radius:9999px;letter-spacing:.02em">ULA Atlas V 등</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;margin-top:20px;flex:1;justify-content:space-around">
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:18px;padding:13px 0;border-top:1px solid var(--hairline-soft);align-items:baseline">
+          <span style="font-size:11px;font-weight:600;color:var(--steel);letter-spacing:.06em;text-transform:uppercase">부품 구조</span>
+          <span style="font-size:14px;font-weight:500;color:var(--charcoal);line-height:1.55;letter-spacing:-.005em">약 <span style="font-weight:700;color:var(--ink)">100만 개</span> 부품 · 수백 개 협력업체에 분산</span>
+        </div>
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:18px;padding:13px 0;border-top:1px solid var(--hairline-soft);align-items:baseline">
+          <span style="font-size:11px;font-weight:600;color:var(--steel);letter-spacing:.06em;text-transform:uppercase">제작 기간</span>
+          <span style="font-size:14px;font-weight:500;color:var(--charcoal);line-height:1.55;letter-spacing:-.005em">평균 <span style="font-weight:700;color:var(--ink)">12~24개월</span></span>
+        </div>
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:18px;padding:13px 0;border-top:1px solid var(--hairline-soft);align-items:baseline">
+          <span style="font-size:11px;font-weight:600;color:var(--steel);letter-spacing:.06em;text-transform:uppercase">발사 후</span>
+          <span style="font-size:14px;font-weight:500;color:var(--charcoal);line-height:1.55;letter-spacing:-.005em">1회 사용 후 <span style="font-weight:700;color:var(--ink)">폐기</span> → 매번 처음부터 다시</span>
+        </div>
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:18px;padding:13px 0;border-top:1px solid var(--hairline-soft);border-bottom:1px solid var(--hairline-soft);align-items:baseline">
+          <span style="font-size:11px;font-weight:600;color:var(--steel);letter-spacing:.06em;text-transform:uppercase">연 발사</span>
+          <span style="font-size:14px;font-weight:500;color:var(--charcoal);line-height:1.55;letter-spacing:-.005em">연 <span style="font-weight:700;color:var(--ink)">6~12회</span>가 한계</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 우: SpaceX (coral) -->
+    <div style="background:var(--coral);color:var(--on-dark);border-radius:28px;padding:28px;display:flex;flex-direction:column;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-100px;right:-100px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.1)"></div>
+      <div style="position:absolute;bottom:-90px;left:-90px;width:210px;height:210px;border-radius:50%;background:rgba(0,0,0,.06)"></div>
+
+      <div style="position:relative;display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+        <div>
+          <p style="font-size:11px;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">SpaceX · 새로운 공식</p>
+          <h3 style="font-size:28px;font-weight:800;color:#fff;letter-spacing:-1px;line-height:1.2">9일 만에 <span style="font-weight:300">다시 발사</span></h3>
+        </div>
+        <span style="font-size:11px;font-weight:700;color:var(--coral);background:#fff;padding:5px 12px;border-radius:9999px;letter-spacing:.02em">호손 · 캘리포니아</span>
+      </div>
+
+      <div style="position:relative;display:flex;flex-direction:column;margin-top:20px;flex:1;justify-content:space-around">
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:18px;padding:13px 0;border-top:1px solid rgba(255,255,255,.18);align-items:baseline">
+          <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.06em;text-transform:uppercase">부품 구조</span>
+          <span style="font-size:14px;font-weight:500;color:rgba(255,255,255,.95);line-height:1.55;letter-spacing:-.005em">부품의 <span style="font-weight:800;color:#fff">70~80%</span>를 자체 공장에서 직접 생산</span>
+        </div>
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:18px;padding:13px 0;border-top:1px solid rgba(255,255,255,.18);align-items:baseline">
+          <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.06em;text-transform:uppercase">정비 사이클</span>
+          <span style="font-size:14px;font-weight:500;color:rgba(255,255,255,.95);line-height:1.55;letter-spacing:-.005em">1단 부스터를 <span style="font-weight:800;color:#fff">9일 만에 재정비</span> (최단 기록)</span>
+        </div>
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:18px;padding:13px 0;border-top:1px solid rgba(255,255,255,.18);align-items:baseline">
+          <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.06em;text-transform:uppercase">발사 후</span>
+          <span style="font-size:14px;font-weight:500;color:rgba(255,255,255,.95);line-height:1.55;letter-spacing:-.005em">1단 부스터 <span style="font-weight:800;color:#fff">회수 후 재사용</span> — 최대 34회</span>
+        </div>
+        <div style="display:grid;grid-template-columns:120px 1fr;gap:18px;padding:13px 0;border-top:1px solid rgba(255,255,255,.18);border-bottom:1px solid rgba(255,255,255,.18);align-items:baseline">
+          <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.06em;text-transform:uppercase">연 발사</span>
+          <span style="font-size:14px;font-weight:500;color:rgba(255,255,255,.95);line-height:1.55;letter-spacing:-.005em">연 <span style="font-weight:800;color:#fff">165회</span> ≈ 일반 항공사 운영 빈도</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 하단: 질문 → 답 다크 박스 -->
+    <div style="grid-column:span 2;background:var(--ink);color:var(--on-dark);border-radius:16px;padding:22px 30px;display:flex;align-items:center;justify-content:space-between;gap:32px">
+      <div style="display:flex;align-items:center;gap:18px">
+        <span style="font-size:32px;font-weight:300;color:var(--coral);line-height:1">?</span>
+        <p style="font-size:16px;font-weight:500;color:rgba(255,255,255,.85);letter-spacing:-.01em">
+          무엇이 이 차이를 만드는가?
+        </p>
+      </div>
+      <span style="width:60px;height:1px;background:rgba(255,255,255,.25);flex-shrink:0"></span>
+      <p style="font-size:16px;font-weight:500;color:#fff;letter-spacing:-.01em;text-align:right;flex:1;line-height:1.45">
+        <span style="font-weight:700;color:var(--coral)">생산 운영 시스템의 설계 차이.</span> 다음 슬라이드부터 분해해서 본다.
+      </p>
+    </div>
+  </div>
+
+  <p style="position:absolute;bottom:24px;right:32px;font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.06em">04</p>
+</div>
+
+
+<!-- ═══ SLIDE 5 · 경쟁 우선순위 이론 ═══ -->
+<div class="slide">
+  <div style="position:absolute;top:32px;left:64px;right:64px">
+    <p style="font-size:13px;font-weight:600;color:var(--steel);margin-bottom:14px;letter-spacing:.02em">제2장 <span style="font-weight:300;color:var(--stone)">·</span> 이론 적용 1</p>
+    <h2 style="font-size:54px;font-weight:700;color:var(--ink);letter-spacing:-2px;line-height:1.12;margin-bottom:12px">
+      경쟁 우선순위 이론으로 본 <span style="font-weight:300;color:var(--stone)">스페이스X</span>
+    </h2>
+    <p style="font-size:19px;font-weight:400;color:var(--steel);line-height:1.5;letter-spacing:-.005em">
+      주문 자격 <span style="font-weight:300;color:var(--stone)">vs</span> 주문 승리 — <span style="font-weight:600;color:var(--charcoal)">경쟁의 룰</span>이 바뀌었다.
+    </p>
+  </div>
+
+  <div style="position:absolute;left:64px;right:64px;top:204px;bottom:84px;display:grid;grid-template-columns:1.35fr 1fr;gap:16px">
+
+    <!-- 좌: 비교 표 -->
+    <div style="background:var(--canvas);border:1px solid var(--hairline);border-radius:20px;padding:26px 28px;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px">
+        <p style="font-size:11px;font-weight:700;color:var(--steel);letter-spacing:.08em;text-transform:uppercase">Order Qualifier <span style="color:var(--stone);font-weight:400">vs</span> Order Winner</p>
+        <p style="font-size:11px;font-weight:500;color:var(--muted);letter-spacing:.04em">우주 발사 시장 기준</p>
+      </div>
+
+      <!-- 표 헤더 -->
+      <div style="display:grid;grid-template-columns:1.05fr 1fr 1fr;gap:14px;padding:14px 0;border-bottom:2px solid var(--ink)">
+        <span style="font-size:11px;font-weight:700;color:var(--ink);letter-spacing:.06em;text-transform:uppercase">구분</span>
+        <span style="font-size:11px;font-weight:700;color:var(--steel);letter-spacing:.06em;text-transform:uppercase">과거 우주 산업</span>
+        <span style="font-size:11px;font-weight:700;color:var(--coral);letter-spacing:.06em;text-transform:uppercase">현재 우주 산업</span>
+      </div>
+
+      <!-- row 1: 주문 자격 -->
+      <div style="display:grid;grid-template-columns:1.05fr 1fr 1fr;gap:14px;padding:22px 0;border-bottom:1px solid var(--hairline-soft);align-items:center;flex:1">
+        <div>
+          <p style="font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:4px">주문 자격</p>
+          <p style="font-size:12px;font-weight:500;color:var(--steel);letter-spacing:-.005em">기본 조건 · Qualifier</p>
+        </div>
+        <div style="display:flex;align-items:center">
+          <span style="font-size:32px;font-weight:300;color:var(--stone);line-height:1">—</span>
+        </div>
+        <div>
+          <p style="font-size:14px;font-weight:600;color:var(--charcoal);letter-spacing:-.005em;line-height:1.45">발사 성공률 <span style="font-weight:700;color:var(--ink)">99% 이상</span></p>
+        </div>
+      </div>
+
+      <!-- row 2: 주문 승리 -->
+      <div style="display:grid;grid-template-columns:1.05fr 1fr 1fr;gap:14px;padding:22px 0;align-items:center;flex:1">
+        <div>
+          <p style="font-size:15px;font-weight:700;color:var(--ink);letter-spacing:-.01em;margin-bottom:4px">주문 승리</p>
+          <p style="font-size:12px;font-weight:500;color:var(--steel);letter-spacing:-.005em">선택 이유 · Winner</p>
+        </div>
+        <div>
+          <p style="font-size:14px;font-weight:500;color:var(--steel);letter-spacing:-.005em;line-height:1.45">발사 성공률 <span style="font-weight:300;color:var(--stone)">·</span> 기술력</p>
+        </div>
+        <div style="background:rgba(255,85,48,.08);border:1px solid rgba(255,85,48,.25);border-radius:10px;padding:12px 14px">
+          <p style="font-size:14px;font-weight:700;color:var(--coral);letter-spacing:-.005em;line-height:1.45">가격 <span style="font-weight:300;color:var(--stone)">+</span> 발사 일정 유연성</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 우: 두 카드 -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- 우상: 새 승리 조건 (coral) -->
+      <div style="background:var(--coral);color:var(--on-dark);border-radius:24px;padding:26px;flex:1.1;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden">
+        <div style="position:absolute;top:-80px;right:-80px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.12)"></div>
+
+        <div style="position:relative">
+          <p style="font-size:11px;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">SpaceX가 잡은 새 승리 조건</p>
+          <h3 style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-1px;line-height:1.2">가격 <span style="font-weight:300;color:rgba(255,255,255,.6)">+</span> 속도</h3>
+        </div>
+
+        <div style="position:relative;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:rgba(255,255,255,.14);border-radius:10px">
+            <span style="width:6px;height:6px;background:#fff;border-radius:50%;flex-shrink:0"></span>
+            <p style="font-size:13px;font-weight:600;color:#fff;letter-spacing:-.005em">발사당 단가 <span style="font-weight:300;color:rgba(255,255,255,.75)">— 경쟁사 절반 이하</span></p>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:rgba(255,255,255,.14);border-radius:10px">
+            <span style="width:6px;height:6px;background:#fff;border-radius:50%;flex-shrink:0"></span>
+            <p style="font-size:13px;font-weight:600;color:#fff;letter-spacing:-.005em">일정 유연성 <span style="font-weight:300;color:rgba(255,255,255,.75)">— 2.2일에 1회 페이스</span></p>
+          </div>
+        </div>
+
+        <p style="position:relative;font-size:13px;font-weight:400;color:rgba(255,255,255,.85);line-height:1.55;letter-spacing:-.005em">
+          → 핵심 역량을 <span style="font-weight:700;color:#fff">공장 운영·생산성 향상</span>에 집중
+        </p>
+      </div>
+
+      <!-- 우하: 시사점 (다크 박스) -->
+      <div style="background:var(--ink);color:var(--on-dark);border-radius:20px;padding:24px;flex:1;display:flex;flex-direction:column;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="width:6px;height:6px;background:var(--coral);border-radius:50%"></span>
+          <p style="font-size:11px;font-weight:700;color:var(--coral);letter-spacing:.08em;text-transform:uppercase">시사점</p>
+        </div>
+
+        <p style="font-size:15px;font-weight:500;color:#fff;line-height:1.55;letter-spacing:-.01em">
+          경쟁의 룰이 <span style="font-weight:400;color:rgba(255,255,255,.7);text-decoration:line-through;text-decoration-color:rgba(255,255,255,.4)">'공학 기술 경쟁'</span> <span style="font-weight:300;color:rgba(255,255,255,.6)">에서</span><br><span style="font-weight:800;color:var(--coral)">'생산 운영 경쟁'</span>으로 바뀌었다.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <p style="position:absolute;bottom:24px;right:32px;font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.06em">05</p>
+</div>
+
+
+<!-- NAV -->
+<div id="nav">
+  <button id="bp" onclick="go(-1)" disabled>‹</button>
+  <span id="ctr">1 / 5</span>
+  <button id="bn" onclick="go(1)">›</button>
+</div>
+
+<script>
+const ss=document.querySelectorAll('.slide'),N=ss.length;let c=0;
+function show(n){ss[c].classList.remove('on');c=Math.max(0,Math.min(N-1,n));ss[c].classList.add('on');document.getElementById('ctr').textContent=(c+1)+' / '+N;document.getElementById('bp').disabled=c===0;document.getElementById('bn').disabled=c===N-1;}
+function go(d){show(c+d);}
+document.addEventListener('keydown',e=>{if(['ArrowRight','ArrowDown',' '].includes(e.key)){e.preventDefault();go(1);}if(['ArrowLeft','ArrowUp'].includes(e.key)){e.preventDefault();go(-1);}});
+</script>
+</body>
+</html>
