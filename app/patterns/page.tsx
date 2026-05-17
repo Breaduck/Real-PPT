@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import clsx from "clsx";
 import { SKELETONS, CHARTS, ACCENTS, type Pattern } from "@/lib/patterns";
+import { SkeletonPreview, AccentPreview, substituteChartPlaceholders } from "./previews";
 
 type Tab = "skeleton" | "chart" | "accent";
 
@@ -94,16 +95,14 @@ function PatternPreview({ pattern }: { pattern: Pattern }) {
   if (pattern.category === "chart") {
     return (
       <div
-        className="bg-white dark:bg-zinc-950 rounded-md p-3 ring-1 ring-zinc-200 dark:ring-zinc-800 overflow-hidden"
+        className="bg-white dark:bg-zinc-950 rounded-md p-2 ring-1 ring-zinc-200 dark:ring-zinc-800 overflow-hidden flex items-center justify-center"
         style={{ aspectRatio: "16 / 9" }}
-        dangerouslySetInnerHTML={{ __html: pattern.svgTemplate }}
+        dangerouslySetInnerHTML={{ __html: substituteChartPlaceholders(pattern.svgTemplate) }}
       />
     );
   }
-  // skeleton / accent: ASCII sketch
-  return (
-    <pre className="bg-white dark:bg-zinc-950 rounded-md p-3 ring-1 ring-zinc-200 dark:ring-zinc-800 text-[10px] leading-tight font-mono text-zinc-700 dark:text-zinc-400 whitespace-pre-wrap overflow-hidden" style={{ minHeight: 100 }}>
-{pattern.visualSketch}
-    </pre>
-  );
+  if (pattern.category === "skeleton") {
+    return <SkeletonPreview id={pattern.id} name={pattern.name} />;
+  }
+  return <AccentPreview id={pattern.id} name={pattern.name} />;
 }
